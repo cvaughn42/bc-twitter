@@ -50,17 +50,17 @@ db.serialize(function() {
 
         db.exec(sql);
     
-        var stmt = db.prepare("INSERT INTO user VALUES (?)");
+        var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
     
         //Insert users
-        stmt.run("cvaughan");
-        stmt.run("jku");
+        stmt.run("cvaughan", "Chris", null, "Vaughan");
+        stmt.run("jku", "Jing", null, "Ku");
     
         stmt.finalize();
     }
 
-    db.each("SELECT rowid AS id, name FROM user", function(err, row) {
-        console.log(row.id + ": " + row.name);
+    db.each("SELECT rowid AS id, user_name FROM user", function(err, row) {
+        console.log(row.id + ": " + row.user_name);
     });
 });
 
