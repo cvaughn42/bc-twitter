@@ -5,9 +5,17 @@ var fs = require('fs');
 var express = require('express');
 var app = express();
 
+var dbFileName = "bc-twitter-db.data";
+var exists = fs.existsSync(dbFileName);
+
+if(!exists) {
+  console.log("Creating DB file " + dbFileName + ".");
+  fs.openSync(dbFileName, "w");
+}
+
 // Import SQLite 3 & create in-memory Database
 var sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database(":memory:");
+var db = new sqlite3.Database(dbFileName);
 
 // Port constant
 var port = 8080;
@@ -31,15 +39,18 @@ function readFile(fileName, encoding) {
 
 db.serialize(function() {
   
-    db.run("CREATE TABLE user (name VARCHAR(20))");
-  
-    var stmt = db.prepare("INSERT INTO user VALUES (?)");
-  
-    //Insert users
-    stmt.run("cvaughan");
-    stmt.run("jku");
-  
-    stmt.finalize();
+    if (!exists)
+    {
+        db.run("CREATE TABLE user (name VARCHAR(20))");
+    
+        var stmt = db.prepare("INSERT INTO user VALUES (?)");
+    
+        //Insert users
+        stmt.run("cvaughan");
+        stmt.run("jku");
+    
+        stmt.finalize();
+    }
 
     db.each("SELECT rowid AS id, name FROM user", function(err, row) {
         console.log(row.id + ": " + row.name);
