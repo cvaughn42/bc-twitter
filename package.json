@@ -18,6 +18,7 @@
   "homepage": "https://github.com/cvaughn42/bc-twitter#readme",
   "dependencies": {
     "express": "^4.14.0",
+    "fs-extra": "^0.30.0",
     "sqlite3": "^3.1.4"
   }
 }

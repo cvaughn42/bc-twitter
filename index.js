@@ -1,12 +1,17 @@
 // Import file system library
-var fs = require('fs');
+var fs = require('fs-extra');
 
 // Import Express library
 var express = require('express');
 var app = express();
 
-var dbFileName = "bc-twitter-db.data";
+var dbFileName = "bc-twitter-db.sqlite";
 var exists = fs.existsSync(dbFileName);
+if (exists)
+{
+    fs.removeSync(dbFileName);
+    exists = false;
+}
 
 if(!exists) {
   console.log("Creating DB file " + dbFileName + ".");
@@ -41,7 +46,9 @@ db.serialize(function() {
   
     if (!exists)
     {
-        db.run("CREATE TABLE user (name VARCHAR(20))");
+        var sql = fs.readFileSync("create_tables.sql", "utf8");
+
+        db.exec(sql);
     
         var stmt = db.prepare("INSERT INTO user VALUES (?)");
     

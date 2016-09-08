@@ -16,6 +16,7 @@ ON user_follow (user_name, follower_user_name);
 
 CREATE TABLE tweet
 (
+    tweet_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     tweet_date TIMESTAMP NOT NULL,
     message VARCHAR(140) NOT NULL,
     author VARCHAR(20) NOT NULL,
