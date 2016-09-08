@@ -31,6 +31,28 @@ function DAO(fileName, forceNew)
 // all DB prepare statements
 DAO.INSERT_USER_PRE_STMT = "INSERT INTO user (user_name, password, first_name, middle_name, last_name) VALUES (?, ?, ?, ?, ?)";
 DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
+DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ? and password = ?";
+
+DAO.prototype.authenticate = function(userName, password) {
+    console.log ('inside authenticate method');
+
+    this.db.get(DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT, userName, password, function (err, row) {
+
+        if (err) {
+            throw 'Unable to authenticate: ' + err;
+        }
+
+        if (row) {
+            console.log('authenticated.');
+            return true;
+        } else {
+            console.log('login not found');
+            return false;
+        }
+    });
+    
+}
+
 /**
  * Create user
  * @argument user User object 
@@ -133,5 +155,5 @@ DAO.prototype._initializeDatabase = function() {
 
 var dbFileName = "bc-twitter-db.sqlite";
 
-// module.exports = new DAO(dbFileName, true);
+//module.exports = new DAO(dbFileName, true);
 module.exports = new DAO(dbFileName);

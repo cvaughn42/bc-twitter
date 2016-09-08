@@ -11,6 +11,18 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
+var session = require('express-session')
+app.use(session({
+    /*
+    genid: function(req) {
+        return genuuid();   // use UUIDs for session IDs
+    },
+    */
+    secret: 'currentUser',
+    resave: false,
+    saveUninitialized: false
+}));
+
 var stringUtil = require('string');
 
 var dao = require('./db.js');
@@ -33,7 +45,34 @@ function readFile(fileName, encoding) {
     });
 };
 
-app.get('/', function (req, res) {
+function checkAuth(req, res, next) {
+    if (!req.session.currentUser) {
+        readFile('login.html', 'utf8').then(function (html) {
+            res.send(html);
+        });
+    } else {
+        next();
+    }
+}
+
+/*
+app.all('/*', function (req, res) {
+    if (stringUtil(req.url).startsWith('/login')) {
+        console.log('cont to login page');
+        res.redirect('/login');
+    } else if (!req.body.currentUser) {
+        console.log('sending to login.html');
+        readFile('login.html', 'utf8').then(function (html) {
+            res.send(html);
+        });
+    } else {
+        console.log('passing login page');
+        //next();
+    }
+});
+*/
+
+app.get('/', checkAuth, function (req, res) {
 
     var out = "";
 
@@ -57,7 +96,7 @@ app.get('/', function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
-}).get('/createUser', function (req, res) {
+}).get('/createUser', checkAuth, function (req, res) {
 
     var out = "";
 
@@ -81,22 +120,38 @@ app.get('/', function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
+}).post('/login', function (req, res) {
+    try {
+        console.log('in login post');
+        if (stringUtil(req.body.userName).isEmpty() || stringUtil(req.body.password).isEmpty()) {
+            readFile('login.html', 'utf8').then(function (html) {
+                res.send(html);
+            });
+        } else {
+            console.log('calling before authenticate()');
+            if (dao.authenticate(req.body.userName, req.body.password) === true) {
+                console.log('user authenticated');
+                req.session.currentUser = req.body.userName;
+            }
+            res.redirect('/');
+        }
+    } catch (err) {
+        res.send(err);
+    }
 }).post('/user', function (req, res) {
 
-   var nullIfEmpty = function(val) {
+    var nullIfEmpty = function (val) {
 
         console.log("val = " + val);
 
-        if (stringUtil(val).isEmpty())
-        {
+        if (stringUtil(val).isEmpty()) {
             return null;
         }
-        
+
         return val;
     };
 
-    try
-    {
+    try {
         var user = {
             userName: nullIfEmpty(req.body.userName),
             password: nullIfEmpty(req.body.password),
@@ -111,8 +166,7 @@ app.get('/', function (req, res) {
 
         res.send('ok');
     }
-    catch (err)
-    {
+    catch (err) {
         res.send(err);
     }
 });
