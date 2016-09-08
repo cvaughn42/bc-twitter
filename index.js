@@ -161,24 +161,26 @@ app.get('/', checkAuth, function (req, res) {
         return val;
     };
 
-    try {
-        var user = {
-            userName: nullIfEmpty(req.body.userName),
-            password: nullIfEmpty(req.body.password),
-            firstName: nullIfEmpty(req.body.firstName),
-            middleName: nullIfEmpty(req.body.middleName),
-            lastName: nullIfEmpty(req.body.lastName)
-        };
+    var user = {
+        userName: nullIfEmpty(req.body.userName),
+        password: nullIfEmpty(req.body.password),
+        firstName: nullIfEmpty(req.body.firstName),
+        middleName: nullIfEmpty(req.body.middleName),
+        lastName: nullIfEmpty(req.body.lastName)
+    };
 
-        console.dir(user);
+    console.dir(user);
 
-        dao.createUser(user);
-
-        res.send('ok');
-    }
-    catch (err) {
-        res.send(err);
-    }
+    dao.createUser(user, function(err, success) {
+        if (err) {
+            console.log('err ==> ' + err);
+            res.send(err); 
+        } else {
+            console.log('sending ok');
+            res.send('ok');
+        }
+    });
+    console.log('after createUser called');
 });
 
 var server = app.listen(port, function () {

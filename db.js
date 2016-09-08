@@ -65,31 +65,36 @@ DAO.prototype.authenticate = function(userName, password, cb) {
  *          lastName: ""
  *      }
  */
-DAO.prototype.createUser = function(user) {
+DAO.prototype.createUser = function(user, cb) {
 
-    if (!user)
-    {
-        throw 'User is required';
-    }
-    
-    if (stringUtil(user.userName).isEmpty())
-    {
-        throw 'User.userName is required';
-    }
+    try {
+        if (!user)
+        {
+            throw 'User is required';
+        }
+        
+        if (stringUtil(user.userName).isEmpty())
+        {
+            throw 'User.userName is required';
+        }
 
-    if (stringUtil(user.password).isEmpty())
-    {
-        throw 'User.password is required';
-    }
+        if (stringUtil(user.password).isEmpty())
+        {
+            throw 'User.password is required';
+        }
 
-    if (stringUtil(user.firstName).isEmpty())
-    {
-        throw 'User.firstName is required';
-    }
+        if (stringUtil(user.firstName).isEmpty())
+        {
+            throw 'User.firstName is required';
+        }
 
-    if (stringUtil(user.lastName).isEmpty())
-    {
-        throw 'User.lastName is required';
+        if (stringUtil(user.lastName).isEmpty())
+        {
+            throw 'User.lastName is required';
+        }
+    } catch (err) {
+        cb(err, false);
+        return;
     }
 
     var self = this;
@@ -98,11 +103,13 @@ DAO.prototype.createUser = function(user) {
     this.db.get(DAO.FIND_USER_BY_USERNAME_PRE_STMT, user.userName, function (err, row) {
 
         if (err) {
-            throw 'Unable to add user: ' + err;
+            cb('Unable to add user: ' + err, false);
+            return;
         }
 
         if (row) {
-            throw 'User name is already in use';
+            cb('User name is already in use', false);
+            return;
         }
                 
         // If not, add the user
@@ -112,10 +119,9 @@ DAO.prototype.createUser = function(user) {
         
         stmt.finalize();
 
-        return true;
+        cb(null, true);
+        return;
     });
-
-    return false;
 };
 /*
  * Initialize the database
