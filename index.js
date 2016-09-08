@@ -7,11 +7,14 @@ var app = express();
 
 var dbFileName = "bc-twitter-db.sqlite";
 var exists = fs.existsSync(dbFileName);
+
+/*
 if (exists)
 {
     fs.removeSync(dbFileName);
     exists = false;
 }
+*/
 
 if(!exists) {
   console.log("Creating DB file " + dbFileName + ".");
@@ -64,8 +67,6 @@ db.serialize(function() {
     });
 });
 
-db.close();
-
 app.get('/', function (req, res) {
 
     var out = "";
@@ -90,8 +91,49 @@ app.get('/', function (req, res) {
             console.log("Unable to send html: " + err);
         }
     );
+}).put('/user', function(req, res) {
+
+    var userName = null;
+    var firstName = null;
+    var middleName = null;
+    var lastName = null;
+
+    db.serialize(function() {
+        
+        // does the user already exist?
+        db.get("SELECT rowid FROM user WHERE user_name = ?", userName, function(err, row) {
+
+            if (err)
+            {
+                res.send("Error: " + err);
+            }
+            else
+            {
+                if (row)
+                {
+                    res.send('Error: user name is already in use');
+                }
+                else
+                {
+                    var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
+                    stmt.run(userName, firstName, middleName, lastName);                
+                    stmt.finalize();
+                    res.send('ok');
+                }
+            }
+        });
+    });
 });
 
-app.listen(port, function () {
+var server = app.listen(port, function () {
   console.log('Example app listening on port ' + port + '!');
+});
+
+// Fires when node is terminated?
+//
+process.on( 'SIGTERM', function () {
+   server.close(function () {
+     db.close();
+     console.log( "Closed out remaining connections.");
+   });
 });
