@@ -91,7 +91,31 @@ app.get('/', function (req, res) {
             console.log("Unable to send html: " + err);
         }
     );
-}).put('/user', function(req, res) {
+}).get('/createUser', function (req, res) {
+
+    var out = "";
+
+    readFile('header.html', 'utf8').then(
+        function(html){
+            out += html;
+            return readFile('new-user.html', 'utf8');
+        }
+    ).then(
+        function(html) {
+            out += html;
+            return readFile('footer.html', 'utf8');
+        }
+    ).then(
+        function(html) {
+            out += html;
+            res.send(out);
+        }
+    ).catch(
+        function(err) {
+            console.log("Unable to send html: " + err);
+        }
+    );
+}).post('/user', function(req, res) {
 
     var userName = null;
     var firstName = null;
