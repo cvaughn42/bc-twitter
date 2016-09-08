@@ -28,7 +28,11 @@ app.get('/', function (req, res) {
     readFile('header.html', 'utf8').then(
         function(html){
             out += html;
-            out += "Welcome!";
+            return readFile('tweet-page.html', 'utf8');
+        }
+    ).then(
+        function(html) {
+            out += html;
             return readFile('footer.html', 'utf8');
         }
     ).then(
