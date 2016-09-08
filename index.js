@@ -13,25 +13,7 @@ app.use(bodyParser.json());
 
 var stringUtil = require('string');
 
-var dbFileName = "bc-twitter-db.sqlite";
-var exists = fs.existsSync(dbFileName);
-
-/*
-if (exists)
-{
-    fs.removeSync(dbFileName);
-    exists = false;
-}
-*/
-
-if (!exists) {
-    console.log("Creating DB file " + dbFileName + ".");
-    fs.openSync(dbFileName, "w");
-}
-
-// Import SQLite 3 & create in-memory Database
-var sqlite3 = require("sqlite3").verbose();
-var db = new sqlite3.Database(dbFileName);
+var dao = require('./db.js');
 
 // Port constant
 var port = 8080;
@@ -50,36 +32,6 @@ function readFile(fileName, encoding) {
         });
     });
 };
-
-// all DB prepare statements
-const INSERT_USER_PRE_STMT = "INSERT INTO user VALUES (?, ?, ?, ?)";
-const FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
-
-
-// BEGIN Utility functions
- 
-// END Utility functions
-
-db.serialize(function () {
-
-    if (!exists) {
-        var sql = fs.readFileSync("create_tables.sql", "utf8");
-
-        db.exec(sql);
-
-        var stmt = db.prepare(INSERT_USER_PRE_STMT);
-
-        //Insert users
-        stmt.run("cvaughan", "Chris", null, "Vaughan");
-        stmt.run("jku", "Jing", null, "Ku");
-
-        stmt.finalize();
-    }
-
-    db.each("SELECT rowid AS id, user_name FROM user", function (err, row) {
-        console.log(row.id + ": " + row.user_name);
-    });
-});
 
 app.get('/', function (req, res) {
 
@@ -131,35 +83,38 @@ app.get('/', function (req, res) {
         );
 }).post('/user', function (req, res) {
 
-    db.serialize(function () {
+   var nullIfEmpty = function(val) {
 
-        if (!stringUtil(req.body.userName).isEmpty() && !stringUtil(req.body.firstName).isEmpty() && !stringUtil(req.body.lastName).isEmpty()) {
-            // does the user already exist?
-            db.get(FIND_USER_BY_USERNAME_PRE_STMT, req.body.userName, function (err, row) {
+        console.log("val = " + val);
 
-                if (err) {
-                    res.send("Error: " + err);
-                }
-                else {
-                    if (row) {
-                        res.send('Error: user name is already in use');
-                    }
-                    else {
-                        var stmt = db.prepare(INSERT_USER_PRE_STMT);
-                        var mName = null;
-                        if (!stringUtil(req.body.middleName).isEmpty()) {
-                            mName = req.body.middleName;
-                        }
-                        stmt.run(req.body.userName, req.body.firstName, mName, req.body.lastName);
-                        stmt.finalize();
-                        res.send('ok');
-                    }
-                }
-            });
-        } else {
-            res.send('Username, First Name, & Last Name are required!')
+        if (stringUtil(val).isEmpty())
+        {
+            return null;
         }
-    });
+        
+        return val;
+    };
+
+    try
+    {
+        var user = {
+            userName: nullIfEmpty(req.body.userName),
+            password: nullIfEmpty(req.body.password),
+            firstName: nullIfEmpty(req.body.firstName),
+            middleName: nullIfEmpty(req.body.middleName),
+            lastName: nullIfEmpty(req.body.lastName)
+        };
+
+        console.dir(user);
+
+        dao.createUser(user);
+
+        res.send('ok');
+    }
+    catch (err)
+    {
+        res.send(err);
+    }
 });
 
 var server = app.listen(port, function () {

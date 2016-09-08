@@ -1,6 +1,7 @@
 CREATE TABLE user
 (
     user_name VARCHAR(20) NOT NULL PRIMARY KEY,
+    password VARCHAR(20) NOT NULL,
     first_name VARCHAR(20),
     middle_name VARCHAR(20),
     last_name VARCHAR(20)
