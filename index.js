@@ -55,22 +55,20 @@ function checkAuth(req, res, next) {
     }
 }
 
-/*
-app.all('/*', function (req, res) {
-    if (stringUtil(req.url).startsWith('/login')) {
-        console.log('cont to login page');
-        res.redirect('/login');
-    } else if (!req.body.currentUser) {
-        console.log('sending to login.html');
-        readFile('login.html', 'utf8').then(function (html) {
-            res.send(html);
-        });
-    } else {
-        console.log('passing login page');
-        //next();
+function addCurrentUserToPage(req) {
+
+    var currentUser = req.session.currentUser;
+
+    if (currentUser)
+    {
+        return "<span class='greeting'>Hello " + currentUser.firstName + " " + currentUser.lastName + "</span>" +
+            "<input type='hidden' id='currentUser' name='currentUser' value='" + currentUser.userName + "' />";
     }
-});
-*/
+    else
+    {
+        return "";
+    }
+}
 
 app.get('/', checkAuth, function (req, res) {
 
@@ -79,6 +77,7 @@ app.get('/', checkAuth, function (req, res) {
     readFile('header.html', 'utf8').then(
         function (html) {
             out += html;
+            out += addCurrentUserToPage(req);
             return readFile('tweet-page.html', 'utf8');
         }
     ).then(
@@ -103,6 +102,7 @@ app.get('/', checkAuth, function (req, res) {
     readFile('header.html', 'utf8').then(
         function (html) {
             out += html;
+            out += addCurrentUserToPage(req);
             return readFile('new-user.html', 'utf8');
         }
     ).then(
@@ -121,15 +121,14 @@ app.get('/', checkAuth, function (req, res) {
         }
         );
 }).post('/login', function (req, res) {
-    console.log('in login post');
+
     if (stringUtil(req.body.userName).isEmpty() || stringUtil(req.body.password).isEmpty()) {
         readFile('login.html', 'utf8').then(function (html) {
             res.send(html);
         });
     } else {
-        console.log('calling before authenticate()');
-        
-        dao.authenticate(req.body.userName, req.body.password, function(err, success) {
+
+        dao.authenticate(req.body.userName, req.body.password, function(err, user) {
 
             if (err)
             {
@@ -137,10 +136,9 @@ app.get('/', checkAuth, function (req, res) {
             }
             else
             {
-                console.log('user authenticated');
-                if (success)
+                if (user)
                 {
-                    req.session.currentUser = req.body.userName;
+                    req.session.currentUser = user;
                 }
 
                 res.redirect('/');        

@@ -31,8 +31,8 @@ function DAO(fileName, forceNew)
 // all DB prepare statements
 DAO.INSERT_USER_PRE_STMT = "INSERT INTO user (user_name, password, first_name, middle_name, last_name) VALUES (?, ?, ?, ?, ?)";
 DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
-DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ? and password = ?";
-
+DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name = ? and password = ?";
+DAO.LIST_USERS_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name != ?";
 /**
  * cb callback(err, success);
  */
@@ -46,13 +46,54 @@ DAO.prototype.authenticate = function(userName, password, cb) {
         else
         {
             if (row) {
-                cb(null, true);
+                cb(null, {
+                    userName: row.user_name,
+                    firstName: row.first_name,
+                    middleName: row.middle_name,
+                    lastName: row.last_name
+                });
             } else {
-                cb(null, false);
+                cb(null, null);
             }
         }
     });   
 }
+/**
+ * Returns a list of users
+ */
+DAO.prototype.listUsers = function(userName, cb) {
+
+    if (!userName)
+    {
+        cb('Cannot list users: current user required', null);
+    }
+    else
+    {
+        this.db.all(DAO.LIST_USERS_PRE_STMT, userName, function(err, rows) {
+
+            if (err)
+            {
+                cb("Unable to list users: " + err);
+            }
+            else
+            {
+                var users = [];
+
+                for (var row of rows)
+                {
+                    users.push({
+                        userName: row.user_name,
+                        firstName: row.first_name,
+                        middleName: row.middle_name,
+                        lastName: row.last_name
+                    });
+                }
+
+                cb(null, users);
+            }
+        });
+    }
+};
 
 /**
  * Create user
