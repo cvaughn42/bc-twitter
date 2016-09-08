@@ -121,23 +121,33 @@ app.get('/', checkAuth, function (req, res) {
         }
         );
 }).post('/login', function (req, res) {
-    try {
-        console.log('in login post');
-        if (stringUtil(req.body.userName).isEmpty() || stringUtil(req.body.password).isEmpty()) {
-            readFile('login.html', 'utf8').then(function (html) {
-                res.send(html);
-            });
-        } else {
-            console.log('calling before authenticate()');
-            if (dao.authenticate(req.body.userName, req.body.password) === true) {
-                console.log('user authenticated');
-                req.session.currentUser = req.body.userName;
+    console.log('in login post');
+    if (stringUtil(req.body.userName).isEmpty() || stringUtil(req.body.password).isEmpty()) {
+        readFile('login.html', 'utf8').then(function (html) {
+            res.send(html);
+        });
+    } else {
+        console.log('calling before authenticate()');
+        
+        dao.authenticate(req.body.userName, req.body.password, function(err, success) {
+
+            if (err)
+            {
+                res.send(err);
             }
-            res.redirect('/');
-        }
-    } catch (err) {
-        res.send(err);
+            else
+            {
+                console.log('user authenticated');
+                if (success)
+                {
+                    req.session.currentUser = req.body.userName;
+                }
+
+                res.redirect('/');        
+            }
+        });
     }
+
 }).post('/user', function (req, res) {
 
     var nullIfEmpty = function (val) {

@@ -33,24 +33,25 @@ DAO.INSERT_USER_PRE_STMT = "INSERT INTO user (user_name, password, first_name, m
 DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
 DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ? and password = ?";
 
-DAO.prototype.authenticate = function(userName, password) {
-    console.log ('inside authenticate method');
-
+/**
+ * cb callback(err, success);
+ */
+DAO.prototype.authenticate = function(userName, password, cb) {
+    
     this.db.get(DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT, userName, password, function (err, row) {
 
         if (err) {
-            throw 'Unable to authenticate: ' + err;
+            cb('Unable to authenticate: ' + err, false);
         }
-
-        if (row) {
-            console.log('authenticated.');
-            return true;
-        } else {
-            console.log('login not found');
-            return false;
+        else
+        {
+            if (row) {
+                cb(null, true);
+            } else {
+                cb(null, false);
+            }
         }
-    });
-    
+    });   
 }
 
 /**
