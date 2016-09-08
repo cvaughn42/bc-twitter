@@ -45,6 +45,10 @@ function readFile(fileName, encoding) {
     });
 };
 
+// all DB prepare statements
+const INSERT_USER_PRE_STMT = "INSERT INTO user VALUES (?, ?, ?, ?)";
+const FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
+
 db.serialize(function() {
   
     if (!exists)
@@ -53,7 +57,8 @@ db.serialize(function() {
 
         db.exec(sql);
     
-        var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
+        //var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
+        var stmt = db.prepare(INSERT_USER_PRE_STMT);
     
         //Insert users
         stmt.run("cvaughan", "Chris", null, "Vaughan");
@@ -101,7 +106,8 @@ app.get('/', function (req, res) {
     db.serialize(function() {
         
         // does the user already exist?
-        db.get("SELECT rowid FROM user WHERE user_name = ?", userName, function(err, row) {
+        //db.get("SELECT rowid FROM user WHERE user_name = ?", userName, function(err, row) {
+        db.get(FIND_USER_BY_USERNAME_PRE_STMT, userName, function(err, row) {
 
             if (err)
             {
@@ -115,7 +121,8 @@ app.get('/', function (req, res) {
                 }
                 else
                 {
-                    var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
+                    //var stmt = db.prepare("INSERT INTO user VALUES (?, ?, ?, ?)");
+                    var stmt = db.prepare(INSERT_USER_PRE_STMT);
                     stmt.run(userName, firstName, middleName, lastName);                
                     stmt.finalize();
                     res.send('ok');
