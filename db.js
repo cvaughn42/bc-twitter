@@ -1,4 +1,3 @@
-
 // Import file system library
 var fs = require('fs-extra');
 var stringUtil = require('string');
@@ -29,12 +28,25 @@ function DAO(fileName, forceNew)
 }
 
 // all DB prepare statements
-DAO.INSERT_USER_PRE_STMT = "INSERT INTO user (user_name, password, first_name, middle_name, last_name) VALUES (?, ?, ?, ?, ?)";
-DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
-DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name = ? and password = ?";
-DAO.LIST_USERS_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name != ?";
-DAO.CREATE_TWEET_PS = "INSERT INTO tweet (tweet_date, message, author, reply_tweet_id, retweet_tweet_id, dm_user_name) values (?, ?, ?, ?, ?, ?)";
-DAO.CREATE_FOLLOWER_PS = "INSERT INTO user_follow (user_name, follower_user_name) VALUES (?, ?)";
+DAO.INSERT_USER_PRE_STMT = "INSERT INTO user " + 
+                           "(user_name, password, first_name, middle_name, last_name) " +
+                           "VALUES (?, ?, ?, ?, ?)";
+DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid " +
+                                     "FROM user " +
+                                     "WHERE user_name = ?";
+DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name " +
+                                         "FROM user " +
+                                         "WHERE user_name = ? and " +
+                                         "      password = ?";
+DAO.LIST_USERS_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name " +
+                          "FROM user " +
+                          "WHERE user_name != ?";
+DAO.CREATE_TWEET_PS = "INSERT INTO tweet " +
+                      "(tweet_date, message, author, reply_tweet_id, retweet_tweet_id, dm_user_name) " +
+                      "values (?, ?, ?, ?, ?, ?)";
+DAO.CREATE_FOLLOWER_PS = "INSERT INTO user_follow " +
+                         "(user_name, follower_user_name) " +
+                         "VALUES (?, ?)";
 DAO.LIST_FOLLOWERS_PS = "SELECT user.user_name, user.first_name, user.middle_name, user.last_name " +
                         "FROM user " +
                         "INNER JOIN user_follow ON user.user_name = user_follow.follower_user_name " +
@@ -43,7 +55,9 @@ DAO.LIST_FOLLOWING_PS = "SELECT user.user_name, user.first_name, user.middle_nam
                         "FROM user " +
                         "INNER JOIN user_follow ON user.user_name = user_follow.user_name " +
                         "WHERE user_follow.follower_user_name = ?";
-DAO.DELETE_FOLLOWER_PS = "DELETE FROM user_follow WHERE user_name = ? AND follower_user_name = ?";
+DAO.DELETE_FOLLOWER_PS = "DELETE FROM user_follow " +
+                         "WHERE user_name = ? AND " +
+                         "      follower_user_name = ?";
 /**
  * cb callback(err, success);
  */
@@ -195,6 +209,78 @@ DAO.prototype.listFollowing = function(userName, cb) {
         });
     }
 };
+DAO.prototype.createDirectMessage = function(userName, message, date, tweetId, addressee, cb) {
+   if (!userName || !addressee || !date || !message || !(date instanceof Date))
+    {
+        cb("Unable to create direct message: user name, message, date and addressee are required (and date must be a date object)", false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.CREATE_TWEET_PS);
+
+        try
+        {
+            stmt.run(date, message, userName, tweetId, null, addressee);
+            cb(null, true);
+        }
+        catch (err)
+        {
+            cb("Unable to create direct message: " + err, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
+DAO.prototype.createReply = function(userName, message, date, tweetId, cb) {
+   if (!userName || !tweetId || !date || !message || !(date instanceof Date) || typeof(tweetId) !== 'number')
+    {
+        cb("Unable to create reply: user name, message, date and tweet ID are required (and date must be a date object and tweet ID must be a number)", false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.CREATE_TWEET_PS);
+
+        try
+        {
+            stmt.run(date, message, userName, tweetId, null, null);
+            cb(null, true);
+        }
+        catch (err)
+        {
+            cb("Unable to create retweet: " + err, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
+DAO.prototype.createRetweet = function(userName, message, date, tweetId, cb) {
+   if (!userName || !tweetId || !date || !(date instanceof Date) || typeof(tweetId) !== 'number')
+    {
+        cb("Unable to create retweet: user name, date and tweet ID are required (and date must be a date object and tweet ID must be a number)", false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.CREATE_TWEET_PS);
+
+        try
+        {
+            stmt.run(date, message, userName, null, tweetId, null);
+            cb(null, true);
+        }
+        catch (err)
+        {
+            cb("Unable to create retweet: " + err, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
 /**
  * Creates a new tweet
  * @argument userName user name
@@ -203,7 +289,7 @@ DAO.prototype.listFollowing = function(userName, cb) {
  */
 DAO.prototype.createTweet = function(userName, message, date, cb) {
 
-    if (!userName || !message || !date || typeof(date) !== 'date')
+    if (!userName || !message || !date || !(date instanceof Date))
     {
         cb("Unable to create tweet: user name, message, and date are required (and date must be a date object)", false);
     }
@@ -366,6 +452,15 @@ DAO.prototype._initializeDatabase = function() {
             console.log(row.id + ": " + row.user_name);
         });
     });
+};
+/**
+ * Explicitly close the database
+ */
+DAO.prototype.close = function() {
+    if (this.db)
+    {
+        this.db.close();
+    }
 };
 
 

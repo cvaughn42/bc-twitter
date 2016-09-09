@@ -189,7 +189,7 @@ var server = app.listen(port, function () {
 //
 process.on('SIGTERM', function () {
     server.close(function () {
-        db.close();
+        dao.close();
         console.log("Closed out remaining connections.");
     });
 });
