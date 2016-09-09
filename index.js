@@ -1,3 +1,8 @@
+// Send back headers
+// 400 on bad arguments/user error
+// 500 if we screw up 
+
+
 // Import file system library
 var fs = require('fs-extra');
 

@@ -9,6 +9,64 @@ describe('Testing DAO', function() {
         dao.close();
     });
 
+    it('Can create follower', function(done) {
+
+       dao.createFollower('cvaughan', 'jku', function(err, status) {
+           if (err)
+           {
+               done(new Error("Unable to create follower: " + err));
+           }
+           else 
+           {
+               if (status)
+               {
+                   done();
+               }
+               else
+               {
+                   done(new Error(RETURNED_FALSE_MSG));
+               }
+           }
+       }) ;
+    });
+
+    it('Can read tweets', function(done) {
+
+        dao.getTweets('cvaughan', new Date(1), function(err, tweets) {
+
+            if (err)
+            {
+                done(new Error(err));
+            }
+            else 
+            {
+                console.dir(tweets);
+                done();
+            }
+        });
+    });
+
+    it('Can remove follower', function(done) {
+        
+        dao.deleteFollower('cvaughan', 'jku', function(err, status) {
+            if (err)
+           {
+               done(new Error("Unable to delete follower: " + err));
+           }
+           else 
+           {
+               if (status)
+               {
+                   done();
+               }
+               else
+               {
+                   done(new Error(RETURNED_FALSE_MSG));
+               }
+           }
+        });
+    });
+
     it('Can create retweet', function(done) {
 
         dao.createRetweet('cvaughan', '', new Date(), 1, function(err, status) {

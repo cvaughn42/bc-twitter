@@ -58,6 +58,88 @@ DAO.LIST_FOLLOWING_PS = "SELECT user.user_name, user.first_name, user.middle_nam
 DAO.DELETE_FOLLOWER_PS = "DELETE FROM user_follow " +
                          "WHERE user_name = ? AND " +
                          "      follower_user_name = ?";
+
+DAO.READ_TWEET_SQL = "SELECT t.tweet_id, " +
+                     "       t.tweet_date, " +
+                     "       t.message, " +
+                     "       a.user_name AS author_user_name, " +
+                     "       a.first_name AS author_first_name, " +
+                     "       a.middle_name AS author_middle_name, " +
+                     "       a.last_name AS author_last_name, " +
+                     "       t.reply_tweet_id, " +
+                     "       t.retweet_tweet_id, " +
+                     "       t.dm_user_name " +
+                     "FROM tweet AS t " +
+                     "INNER JOIN user AS a " +
+                     "  ON a.user_name = t.author "/* +
+                     "LEFT OUTER JOIN tweet AS r " +
+                     "  ON t.reply_tweet_id = r.tweet_id " +
+                     "LEFT OUTER JOIN tweet AS rt " +
+                     "  ON t.retweet_tweet_id = rt.tweet_id " +
+                     "LEFT OUTER JOIN user AS dm " +
+                     "  ON t.dm_user_name = dm.user_name "*/;
+
+DAO.READ_TWEETS_PS = DAO.READ_TWEET_SQL +
+                     "WHERE t.tweet_date > ? AND " +
+                     "      (t.author = ? OR " +
+                     "       t.author IN (SELECT user_name " +
+                     "                    FROM user_follow " +
+                     "                    WHERE follower_user_name = ?)) " +
+                     "ORDER BY tweet_date DESC " +
+                     "LIMIT 20";
+
+/**
+ * Returns tweets for the specified user
+ * @argument userName 
+ * @argument since date of last read (only returns newer tweets)
+ * @argument cb callback(err, tweets)
+ */
+DAO.prototype.getTweets = function(userName, since, cb) {
+
+    if (!userName)
+    {
+        cb("Cannot get tweets: userName is required");
+    }
+    else 
+    {
+        if (!since || !(since instanceof Date))
+        {
+            since = new Date(Date.now - (4 * 60 * 60 * 1000));
+        }
+        
+        this.db.all(DAO.READ_TWEETS_PS, since, userName, userName, function(err, rows) {
+
+            if (err)
+            {
+                cb("Cannot get tweets: " + err, null);
+            }
+            else
+            {
+                var tweets = [];
+
+                for (var row of rows)
+                {
+                    tweets.push({
+                        id: row.tweet_id,
+                        message: row.message,
+                        date: new Date(row.tweet_date),
+                        author: {
+                            userName: row.author_user_name,
+                            firstName: row.author_first_name,
+                            middleName: row.author_middle_name,
+                            lastName: row.author_last_name
+                        },
+                        replyId: row.reply_tweet_id,
+                        retweetId: row.retweet_tweet_id,
+                        directMessageAddress: row.dm_user_name
+                    });
+                }
+
+                cb(null, tweets);
+            }
+        });
+    }
+};
 /**
  * cb callback(err, success);
  */
@@ -446,11 +528,11 @@ DAO.prototype._initializeDatabase = function() {
             stmt.run("jku", "abc", "Jing", null, "Ku");
 
             stmt.finalize();
-        }
 
-        self.db.each("SELECT rowid AS id, user_name FROM user", function (err, row) {
-            console.log(row.id + ": " + row.user_name);
-        });
+            self.db.each("SELECT rowid AS id, user_name, password FROM user", function (err, row) {
+                console.log(row.id + ": " + row.user_name + " (" + row.password + ")");
+            });
+        }
     });
 };
 /**
