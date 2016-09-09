@@ -12,3 +12,48 @@
     </div>
 
 </div>
+
+ <script>
+
+     var lastRead = new Date(1);
+     var currentUser = $('#currentUser').val();
+
+     var getTweets = function() {
+
+        $.ajax('/getTweets', {
+            dataType: "json",
+            data: {
+                "userName": currentUser,
+                "lastRead": lastRead
+            },
+            type: 'POST',
+            error: function(jqXhr, status, err) {
+                alert("Unable to read tweets: " + err);
+            },
+            success: function(data) {
+
+                for (var i in data)
+                {
+                    $('#tweetContainer').append(
+                        "<div class='tweet'>" +
+                            data[i].date + " " +
+                            data[i].author.firstName + " " + data[i].author.lastName + " (" + data[i].author.userName + "): " +
+                            data[i].message +
+                        "</div>");
+                }
+
+                lastRead = new Date();
+            }
+        });
+    };
+
+    $(document).ready(function() {
+
+        getTweets();
+
+        setInterval(function() {
+            getTweets();
+        }, 5000);
+    });
+
+</script>

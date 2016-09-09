@@ -125,6 +125,34 @@ app.get('/', checkAuth, function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
+}).post('/getTweets', function (req, res) {
+
+    var un = req.body.userName;
+    var dt = req.body.lastRead;
+
+    if (typeof(dt) === 'string' || typeof(dt) === 'number')
+    {
+        dt = new Date(dt);
+    }
+
+    if (!dt instanceof Date)
+    {
+        dt = null;
+    }
+
+    dao.getTweets(un, dt, function(err, tweets) {
+        
+        if (err)
+        {
+            res.send(err);
+        }
+        else
+        {
+            res.send(tweets);
+        }
+    });
+
+
 }).post('/login', function (req, res) {
 
     if (stringUtil(req.body.userName).isEmpty() || stringUtil(req.body.password).isEmpty()) {
