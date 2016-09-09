@@ -34,11 +34,11 @@
 
                 for (var i in data)
                 {
-                    $('#tweetContainer').append(
+                    $('#tweetContainer').prepend(
                         "<div class='tweet'>" +
-                            data[i].date + " " +
-                            data[i].author.firstName + " " + data[i].author.lastName + " (" + data[i].author.userName + "): " +
-                            data[i].message +
+                            "<div class='tweet-date'>" + data[i].date + "</div>" +
+                            "<div class='tweet-author'>" + data[i].author.firstName + " " + data[i].author.lastName + " (" + data[i].author.userName + ")</div>" +
+                            "<div class='tweet-message'>" + data[i].message + "</div>" + 
                         "</div>");
                 }
 
@@ -51,22 +51,22 @@
 
         var textBox = $('.tweet-console input[type="text"]');
 
-        if (textBox.text())
+        if (textBox.val())
         {
             $.ajax('/tweet', {
                 data: {
                     "userName": currentUser,
-                    "message": textBox.text()
+                    "message": textBox.val()
                 },
                 type: "POST",
+                dataType: "text",
                 error: function(jqXhr, status, error) {
                     alert("Unable to send tweet: " + error);
                 },
                 success: function(data) {
                     if (data === 'ok')
                     {
-                        textBox.text('');
-                        getTweets();
+                        textBox.val('');
                     }
                     else
                     {

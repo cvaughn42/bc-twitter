@@ -4,6 +4,7 @@
   "description": "SSA Boot Camp Twitter Clone Exercise",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "repository": {
