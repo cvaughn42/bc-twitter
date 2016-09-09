@@ -33,6 +33,17 @@ DAO.INSERT_USER_PRE_STMT = "INSERT INTO user (user_name, password, first_name, m
 DAO.FIND_USER_BY_USERNAME_PRE_STMT = "SELECT rowid FROM user WHERE user_name = ?";
 DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name = ? and password = ?";
 DAO.LIST_USERS_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name FROM user WHERE user_name != ?";
+DAO.CREATE_TWEET_PS = "INSERT INTO tweet (tweet_date, message, author, reply_tweet_id, retweet_tweet_id, dm_user_name) values (?, ?, ?, ?, ?, ?)";
+DAO.CREATE_FOLLOWER_PS = "INSERT INTO user_follow (user_name, follower_user_name) VALUES (?, ?)";
+DAO.LIST_FOLLOWERS_PS = "SELECT user.user_name, user.first_name, user.middle_name, user.last_name " +
+                        "FROM user " +
+                        "INNER JOIN user_follow ON user.user_name = user_follow.follower_user_name " +
+                        "WHERE user_follow.user_name = ?";
+DAO.LIST_FOLLOWING_PS = "SELECT user.user_name, user.first_name, user.middle_name, user.last_name " +
+                        "FROM user " +
+                        "INNER JOIN user_follow ON user.user_name = user_follow.user_name " +
+                        "WHERE user_follow.follower_user_name = ?";
+DAO.DELETE_FOLLOWER_PS = "DELETE FROM user_follow WHERE user_name = ? AND follower_user_name = ?";
 /**
  * cb callback(err, success);
  */
@@ -59,6 +70,163 @@ DAO.prototype.authenticate = function(userName, password, cb) {
     });   
 }
 /**
+ * Creates a new follower relationship
+ * @argument userName Person being followed
+ * @argument followerUserName Person following the user's tweets
+ */
+DAO.prototype.createFollower = function(userName, followerUserName, cb) {
+    if (!userName || !followerUserName)
+    {
+        cb('Unable to create follower: user name and follower user name are required', false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.CREATE_FOLLOWER_PS);
+        try
+        {
+            stmt.run(userName, followerUserName);
+            cb(null, true);
+        }
+        catch (e)
+        {
+            cb('Unable to create follower: ' + e, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
+/**
+ * Deletes a follower relationship
+ * @argument userName Person being followed
+ * @argument followerUserName Person following the user's tweets
+ */
+DAO.prototype.deleteFollower = function(userName, followerUserName, cb) {
+    if (!userName || !followerUserName)
+    {
+        cb('Unable to delete follower: user name and follower user name are required', false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.DELETE_FOLLOWER_PS);
+        try
+        {
+            stmt.run(userName, followerUserName);
+            cb(null, true);
+        }
+        catch (e)
+        {
+            cb('Unable to delete follower: ' + e, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
+/**
+ * Returns a list of users following the specified user
+ * @argument userName Person being followed
+ */
+DAO.prototype.listFollowers = function(userName, cb) {
+    if (!userName)
+    {
+        cb("Unable to list followers: User name is required");
+    }
+    else
+    {
+        this.db.all(DAO.LIST_FOLLOWERS_PS, userName, function(err, rows) {
+            if (err)
+            {
+                cb("Unable to list followers: " + err, null);
+            }
+            else
+            {
+                var users = [];
+
+                for (var row of rows)
+                {
+                    users.push({
+                        userName: row.user_name,
+                        firstName: row.first_name,
+                        middleName: row.middle_name,
+                        lastName: row.last_name
+                    });
+                }
+
+                cb(null, users);
+            }
+        });
+    }
+};
+/**
+ * Returns a list of users followed by the specified user
+ * @argument userName Person following other users' tweets
+ */
+DAO.prototype.listFollowing = function(userName, cb) {
+    if (!userName)
+    {
+        cb("Unable to list following: User name is required");
+    }
+    else
+    {
+        this.db.all(DAO.LIST_FOLLOWING_PS, userName, function(err, rows) {
+            if (err)
+            {
+                cb("Unable to list following: " + err, null);
+            }
+            else
+            {
+                var users = [];
+
+                for (var row of rows)
+                {
+                    users.push({
+                        userName: row.user_name,
+                        firstName: row.first_name,
+                        middleName: row.middle_name,
+                        lastName: row.last_name
+                    });
+                }
+
+                cb(null, users);
+            }
+        });
+    }
+};
+/**
+ * Creates a new tweet
+ * @argument userName user name
+ * @argument message tweet message
+ * @argument date date & time of tweet
+ */
+DAO.prototype.createTweet = function(userName, message, date, cb) {
+
+    if (!userName || !message || !date || typeof(date) !== 'date')
+    {
+        cb("Unable to create tweet: user name, message, and date are required (and date must be a date object)", false);
+    }
+    else
+    {
+        var stmt = this.db.prepare(DAO.CREATE_TWEET_PS);
+
+        try
+        {
+            stmt.run(date, message, userName, null, null, null);
+            cb(null, true);
+        }
+        catch (err)
+        {
+            cb("Unable to create tweet: " + err, false);
+        }
+        finally
+        {
+            stmt.finalize();
+        }
+    }
+};
+/**
  * Returns a list of users
  */
 DAO.prototype.listUsers = function(userName, cb) {
@@ -73,7 +241,7 @@ DAO.prototype.listUsers = function(userName, cb) {
 
             if (err)
             {
-                cb("Unable to list users: " + err);
+                cb("Unable to list users: " + err, null);
             }
             else
             {
