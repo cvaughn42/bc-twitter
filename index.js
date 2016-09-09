@@ -125,6 +125,31 @@ app.get('/', checkAuth, function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
+}).post('/tweet', function(req, res) {
+
+    var un = req.body.userName;
+    var m = req.body.message;
+    var dt = new Date();
+
+    dao.createTweet(un, m, dt, function(err, status) {
+
+        if (err) 
+        {
+            res.send(err);
+        }
+        else
+        {
+            if (status)
+            {
+                res.send('ok');
+            }
+            else
+            {
+                res.send("Something weird happened on the server!");
+            }
+        }
+    });
+
 }).post('/getTweets', function (req, res) {
 
     var un = req.body.userName;

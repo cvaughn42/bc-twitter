@@ -47,7 +47,40 @@
         });
     };
 
+    var sendTweet = function() {
+
+        var textBox = $('.tweet-console input[type="text"]');
+
+        if (textBox.text())
+        {
+            $.ajax('/tweet', {
+                data: {
+                    "userName": currentUser,
+                    "message": textBox.text()
+                },
+                type: "POST",
+                error: function(jqXhr, status, error) {
+                    alert("Unable to send tweet: " + error);
+                },
+                success: function(data) {
+                    if (data === 'ok')
+                    {
+                        textBox.text('');
+                        getTweets();
+                    }
+                    else
+                    {
+                        alert("Unable to send tweet: " + data);
+                    }
+                }
+            });
+        }
+
+    };
+
     $(document).ready(function() {
+
+        $('#tweetButton').on('click', sendTweet);
 
         getTweets();
 
