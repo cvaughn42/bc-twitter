@@ -28,6 +28,9 @@ app.use(session({
     saveUninitialized: false
 }));
 
+// Set up resources directory to server static files
+app.use(express.static('resources'));
+
 var stringUtil = require('string');
 
 var dao = require('./db.js');
