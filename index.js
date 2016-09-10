@@ -103,31 +103,20 @@ app.get('/', checkAuth, function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
-}).get('/createUser', checkAuth, function (req, res) {
+}).get('/register', function (req, res) {
 
     var out = "";
 
-    readFile('header.html', 'utf8').then(
-        function (html) {
-            out += html;
-            out += addCurrentUserToPage(req);
-            return readFile('new-user.html', 'utf8');
-        }
-    ).then(
-        function (html) {
-            out += html;
-            return readFile('footer.html', 'utf8');
-        }
-        ).then(
+    readFile('register.html', 'utf8').then(
         function (html) {
             out += html;
             res.send(out);
         }
-        ).catch(
+    ).catch(
         function (err) {
             console.log("Unable to send html: " + err);
         }
-        );
+    );
 }).post('/tweet', function(req, res) {
 
     var un = req.body.userName;
@@ -207,7 +196,7 @@ app.get('/', checkAuth, function (req, res) {
         });
     }
 
-}).post('/user', function (req, res) {
+}).post('/register', function (req, res) {
 
     var nullIfEmpty = function (val) {
 
@@ -232,14 +221,11 @@ app.get('/', checkAuth, function (req, res) {
 
     dao.createUser(user, function(err, success) {
         if (err) {
-            console.log('err ==> ' + err);
             res.send(err); 
         } else {
-            console.log('sending ok');
-            res.send('ok');
+            res.redirect('/');
         }
     });
-    console.log('after createUser called');
 });
 
 var server = app.listen(port, function () {
