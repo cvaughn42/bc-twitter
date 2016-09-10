@@ -15,5 +15,35 @@
 
         <!-- Custom Theme JavaScript -->
         <script src="/js/sb-admin-2.js"></script>
+
+        <script>
+
+            var loadHtml = function(url) {
+
+                $.ajax(url, {
+                    method: 'GET',
+                    dataType: 'html',
+                    error: function(jqXhr, status, err) {
+                        alert('Unable to load url ' + url + ': ' + err);
+                    },
+                    success: function(html) {
+                        $('#appContent').html(html);
+                    }
+                });                
+            };
+
+            $(document).ready(function() {
+
+                /**
+                 * Settings menu item click handler
+                 */
+                $('#mnuSettings').on('click', function() {
+                    loadHtml('/settings');
+                    return false;
+                });
+            });
+
+        </script>
+
     </body>
 </html>

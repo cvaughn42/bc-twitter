@@ -103,6 +103,20 @@ app.get('/', checkAuth, function (req, res) {
             console.log("Unable to send html: " + err);
         }
         );
+}).get('/logout', checkAuth, function(req, res) {
+
+    delete req.session.currentUser;
+    res.redirect('/'); 
+
+}).get('/settings', function(req, res) {
+
+    readFile('settings.html', 'utf8').then(function(html) {
+        res.send(html);
+    }).catch(function(err) {
+        console.log("Unable to read settings html: " + err);
+        res.end();
+    })
+
 }).get('/register', function (req, res) {
 
     var out = "";
@@ -115,6 +129,7 @@ app.get('/', checkAuth, function (req, res) {
     ).catch(
         function (err) {
             console.log("Unable to send html: " + err);
+            res.exd();
         }
     );
 }).post('/tweet', function(req, res) {
