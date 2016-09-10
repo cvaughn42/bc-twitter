@@ -108,6 +108,15 @@ app.get('/', checkAuth, function (req, res) {
     delete req.session.currentUser;
     res.redirect('/'); 
 
+}).get('/profile', function(req, res) {
+
+    readFile('profile.html', 'utf8').then(function(html) {
+        res.send(html);
+    }).catch(function(err) {
+        console.log("Unable to read profile html: " + err);
+        res.end();
+    })
+
 }).get('/settings', function(req, res) {
 
     readFile('settings.html', 'utf8').then(function(html) {

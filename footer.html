@@ -18,7 +18,7 @@
 
         <script>
 
-            var loadHtml = function(url) {
+            var loadHtml = function(url, cb) {
 
                 $.ajax(url, {
                     method: 'GET',
@@ -28,11 +28,35 @@
                     },
                     success: function(html) {
                         $('#appContent').html(html);
+
+                        if (cb)
+                        {
+                            cb();
+                        }
                     }
                 });                
             };
 
+            /**
+             * Load the user profile for the specified userName
+             */
+            var loadUserProfile = function(userName) {
+
+                alert('load ' + userName + '\'s profile');
+
+            };
+
             $(document).ready(function() {
+
+                /**
+                 * Profile menu item click handler
+                 */
+                $('#mnuProfile').on('click', function() {
+                    loadHtml('/profile', function() {
+                        loadUserProfile($('#currentUser').val());
+                    });
+                    return false;
+                });
 
                 /**
                  * Settings menu item click handler
