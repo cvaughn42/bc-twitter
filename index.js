@@ -63,18 +63,31 @@ function checkAuth(req, res, next) {
     }
 }
 
-function addCurrentUserToPage(req) {
+function emptyIfNull(txt) {
+    if (!txt)
+    {
+        return '';
+    }
+    else
+    {
+        return txt;
+    }
+}
+
+function addCurrentUserToPage(req, html) {
 
     var currentUser = req.session.currentUser;
 
     if (currentUser)
     {
-        return "<span class='greeting'>Hello " + currentUser.firstName + " " + currentUser.lastName + "</span>" +
-            "<input type='hidden' id='currentUser' name='currentUser' value='" + currentUser.userName + "' />";
+        return html.replace('%currentUser.userName%', currentUser.userName).
+            replace("%currentUser.firstName%", currentUser.firstName).
+            replace("%currentUser.middleName%", emptyIfNull(currentUser.middleName)).
+            replace('%currentUser.lastName%', currentUser.lastName);
     }
     else
     {
-        return "";
+        return html;
     }
 }
 
@@ -84,8 +97,7 @@ app.get('/', checkAuth, function (req, res) {
 
     readFile('header.html', 'utf8').then(
         function (html) {
-            out += html;
-            out += addCurrentUserToPage(req);
+            out +=  addCurrentUserToPage(req, html);
             return readFile('tweet-page.html', 'utf8');
         }
     ).then(
@@ -125,6 +137,49 @@ app.get('/', checkAuth, function (req, res) {
         console.log("Unable to read settings html: " + err);
         res.end();
     })
+
+}).get('/profile/:userName', function (req, res) {
+
+    var userName = req.params.userName;
+    var profile = {};
+
+    dao.getUser(userName, function(err, user) {
+
+        if (err)
+        {
+            res.send(err);
+        }
+        else 
+        {
+            profile.user = user;
+
+            dao.listFollowers(userName, function(err, followers) {
+
+                if (err)
+                {
+                    res.send(err);
+                }
+                else
+                {
+                    profile.followers = followers;
+
+                    dao.listFollowing(userName, function(err, following) {
+
+                        if (err)
+                        {
+                            res.send(err);
+                        }
+                        else
+                        {
+                            profile.following = following;
+                            res.send(profile);
+                        }
+                    });
+                }
+            });
+        }
+
+    });
 
 }).get('/register', function (req, res) {
 

@@ -164,7 +164,7 @@
                     <!-- /.dropdown -->
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-user fa-fw"></i> %currentUser.firstName% %currentUser.middleName% %currentUser.lastName% <i class="fa fa-caret-down"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-user">
                             <li><a href="#" id="mnuProfile"><i class="fa fa-user fa-fw"></i> User Profile</a>
@@ -182,6 +182,8 @@
                 <!-- /.navbar-top-links -->
 
             </nav>
+
+            <input type="hidden" id="currentUser" value="%currentUser.userName%" />
 
             <!-- Page Content -->
             <div class="container-fluid">

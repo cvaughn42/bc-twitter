@@ -59,6 +59,8 @@ DAO.DELETE_FOLLOWER_PS = "DELETE FROM user_follow " +
                          "WHERE user_name = ? AND " +
                          "      follower_user_name = ?";
 
+DAO.READ_USER_PS = "SELECT first_name, middle_name, last_name FROM user WHERE user_name = ?";
+
 DAO.READ_TWEET_SQL = "SELECT t.tweet_id, " +
                      "       t.tweet_date, " +
                      "       t.message, " +
@@ -88,6 +90,42 @@ DAO.READ_TWEETS_PS = DAO.READ_TWEET_SQL +
                      "ORDER BY tweet_date DESC " +
                      "LIMIT 20";
 
+/**
+ * Returns the user for the specified user name
+ */
+DAO.prototype.getUser = function(userName, cb) {
+
+    if (!userName)
+    {
+        cb("Cannot get user: userName is require", null);
+    }
+    else
+    {
+        this.db.get(DAO.READ_USER_PS, userName, function(err, row) {
+
+            if (err)
+            {
+                cb("Cannot get user: " + err, null);
+            }
+            else
+            {
+                if (!row)
+                {
+                    cb("Cannot get user: No user found for userName " + userName, null);
+                }
+                else
+                {
+                    cb(null, {
+                        "userName": userName,
+                        "firstName": row.first_name,
+                        "middleName": row.middle_name,
+                        "lastName": row.last_name
+                    });
+                }
+            }
+        });
+    }
+};
 /**
  * Returns tweets for the specified user
  * @argument userName 

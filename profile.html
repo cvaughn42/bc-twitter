@@ -1,20 +1,136 @@
-<div class="col-md-12">
+<div class="col-lg-12">
+    <h1 class="page-header">Profile</h1>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Profile Info
+        </div>
+        <div class="panel-body">
+
+            <form role="form">
+                <div class="form-group">
+                    <label>User Name</label>
+                    <div id="userName" name="userName"></div>
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input class="form-control" id="firstName" name="firstName" maxlength="20" autofocus>
+                    <div id="firstName" name="firstName"></div>
+                </div>
+                <div class="form-group">
+                    <label>Middle Name</label>
+                    <input class="form-control" id="middleName" name="middleName" maxlength="20">
+                    <div id="firstName" name="firstName"></div>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input class="form-control" id="lastName" name="lastName" maxlength="20">
+                    <div id="firstName" name="firstName"></div>
+                </div>
+            </form>
+
+            <button id="updateProfileButton" value="Update Profile">Update</button>
+                        
+        </div>
+    </div>
     
-    <h1>Profile</h1>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Followers
+        </div>
+        <div class="panel-body">
+              <div id="followers-div"></div>         
+        </div>
+    </div>
 
-    User Name: <input type="text" name="userName" id="userName" />
-
-    First Name: <input type="text" name="firstName" id="firstName" />
-
-    Middle Name: <input type="text" name="middleName" id="middleName" />
-
-    Last Name: <input type="text" name="lastName" id="lastName" />
-
-    <button id="updateProfileButton" value="Update Profile">Update</button>
-    
-    Followers:
-
-    Following:
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Following
+        </div>
+        <div class="panel-body">
+            <div id="following-div"></div>
+        </div>
+    </div>
 
 </div>
 
+<script>
+
+    /**
+     * Load the user profile for the specified userName
+     */
+    var loadUserProfile = function(userName) {
+
+        $('div#userName').text(userName);
+        
+        var profile;
+
+        $.ajax('/profile/' + userName, {
+            async: true,
+            dataType: 'json',
+            method: 'GET',
+            success: function(data) {
+                loadProfileData(data);
+            },
+            error: function(jqXhr, status, error) {
+                alert('Unable to load profile: ' + error);
+            }
+        });
+    };
+
+    var loadProfileData = function(profile) {
+
+        if (profile)
+        {
+            var user = profile.user;
+
+            if (user.userName === $('#currentUser').val())
+            {
+                // load for update
+                $('input#firstName').val(user.firstName);
+                $('input#middleName').val(user.middleName);
+                $('input#lastName').val(user.lastName);
+                $('input#firstName').show();
+                $('input#middleName').show();
+                $('input#lastName').show();
+                $('div#firstName').hide();
+                $('div#middleName').hide();
+                $('div#lastName').hide();
+            }
+            else
+            {
+                // load for display
+                $('div#firstName').text(user.firstName);
+                $('div#middleName').text(user.middleName);
+                $('div#lastName').text(user.lastName);
+                $('input#firstName').hide();
+                $('input#middleName').hide();
+                $('input#lastName').hide();
+                $('div#firstName').show();
+                $('div#middleName').showhide();
+                $('div#lastName').show();
+            }
+        } 
+
+        $('#followers-div').text('');
+
+        if (profile.followers)
+        {
+            for (var i = 0; i < profile.followers.length; i++)
+            {
+                $('#followers-div').append("<div>" + profile.followers[i].userName + "</div>");
+            }
+        }
+
+        $('#following-div').text('');
+
+        if (profile.following)
+        {
+            for (var i = 0; i < profile.following.length; i++)
+            {
+                $('#following-div').append("<div>" + profile.following[i].userName + "</div>");
+            }
+        }
+  };
+
+</script>

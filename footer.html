@@ -21,6 +21,7 @@
             var loadHtml = function(url, cb) {
 
                 $.ajax(url, {
+                    cache: false,
                     method: 'GET',
                     dataType: 'html',
                     error: function(jqXhr, status, err) {
@@ -35,15 +36,6 @@
                         }
                     }
                 });                
-            };
-
-            /**
-             * Load the user profile for the specified userName
-             */
-            var loadUserProfile = function(userName) {
-
-                alert('load ' + userName + '\'s profile');
-
             };
 
             $(document).ready(function() {
