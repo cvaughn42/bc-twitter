@@ -180,6 +180,21 @@ app.get('/', checkAuth, function (req, res) {
         }
 
     });
+}).post('/updateUser', function(req, res) {
+
+    console.dir(req.body);
+
+    dao.updateUser(req.body.user, function(err, status) {
+
+        if (err)
+        {
+            res.send(err);
+        }
+        else
+        {
+            res.send('ok');
+        }
+    });
 
 }).get('/register', function (req, res) {
 

@@ -4,6 +4,11 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             Profile Info
+            <div class="btn-group pull-right">
+                <button type="button" id="updateProfileButton" onclick="updateProfile(); return false;" class="btn btn-primary btn-xs">
+                    <i class="fa fa-check"></i>&nbsp;Save
+                </button>
+            </div>
         </div>
         <div class="panel-body">
 
@@ -20,16 +25,14 @@
                 <div class="form-group">
                     <label>Middle Name</label>
                     <input class="form-control" id="middleName" name="middleName" maxlength="20">
-                    <div id="firstName" name="firstName"></div>
+                    <div id="middleName" name="middleName"></div>
                 </div>
                 <div class="form-group">
                     <label>Last Name</label>
                     <input class="form-control" id="lastName" name="lastName" maxlength="20">
-                    <div id="firstName" name="firstName"></div>
+                    <div id="lastName" name="lastName"></div>
                 </div>
             </form>
-
-            <button id="updateProfileButton" value="Update Profile">Update</button>
                         
         </div>
     </div>
@@ -67,6 +70,7 @@
 
         $.ajax('/profile/' + userName, {
             async: true,
+            cache: false,
             dataType: 'json',
             method: 'GET',
             success: function(data) {
@@ -96,6 +100,7 @@
                 $('div#firstName').hide();
                 $('div#middleName').hide();
                 $('div#lastName').hide();
+                $('#updateProfileButton').show();
             }
             else
             {
@@ -109,17 +114,22 @@
                 $('div#firstName').show();
                 $('div#middleName').showhide();
                 $('div#lastName').show();
+                $('#updateProfileButton').hide();
             }
         } 
 
         $('#followers-div').text('');
 
-        if (profile.followers)
+        if (profile.followers && profile.followers.length)
         {
             for (var i = 0; i < profile.followers.length; i++)
             {
                 $('#followers-div').append("<div>" + profile.followers[i].userName + "</div>");
             }
+        }
+        else
+        {
+            $('#followers-div').html("<strong>You don't have any followers, but I love you!</strong>");
         }
 
         $('#following-div').text('');
@@ -131,6 +141,43 @@
                 $('#following-div').append("<div>" + profile.following[i].userName + "</div>");
             }
         }
+  };
+
+  function updateProfile() {
+      
+      var firstName = $('input#firstName').val();
+      var middleName = $('input#middleName').val();
+      var lastName = $('input#lastName').val();
+      var userName = $('#currentUser').val();
+
+      if (firstName && lastName && userName)
+      {
+          $.ajax('/updateUser', {
+              'async': true,
+              'method': 'POST', 
+              'data': {
+                  "user": {
+                      "userName": userName,
+                      "firstName": firstName,
+                      "middleName": middleName,
+                      "lastName": lastName
+                  }
+              },
+              'success': function(data) {
+                  if (data !== 'ok')
+                  {
+                      alert(data);
+                  }
+              },
+              'error': function(jqXhr, status, err) {
+                  alert(err);
+              }
+          });
+      }
+      else
+      {
+          alert("First name, last name and user name are required");
+      }
   };
 
 </script>

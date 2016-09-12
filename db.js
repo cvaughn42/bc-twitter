@@ -38,6 +38,11 @@ DAO.FIND_USER_BY_USERNAME_PWD_PRE_STMT = "SELECT user_name, first_name, middle_n
                                          "FROM user " +
                                          "WHERE user_name = ? and " +
                                          "      password = ?";
+DAO.UPDATE_USER_PS = "UPDATE user " +
+                     "SET first_name = ?, " +
+                     "    middle_name = ?, " +
+                     "    last_name = ? " +
+                     "WHERE user_name = ?";
 DAO.LIST_USERS_PRE_STMT = "SELECT user_name, first_name, middle_name, last_name " +
                           "FROM user " +
                           "WHERE user_name != ?";
@@ -124,6 +129,36 @@ DAO.prototype.getUser = function(userName, cb) {
                 }
             }
         });
+    }
+};
+/**
+ * Update the user
+ */
+DAO.prototype.updateUser = function(user, cb) {
+
+    var stmt = this.db.prepare(DAO.UPDATE_USER_PS);
+
+    console.dir(user);
+
+    try
+    {
+        stmt.bind(user.firstName, user.middleName, user.lastName, user.userName);
+        stmt.run(function(err, rslt) {
+            if (err)
+            {
+                cb("Unable to update user: " + err);
+            }
+            else
+            {
+                cb(null, true);
+            }
+            stmt.finalize();
+        });
+
+    }
+    catch (err)
+    {
+        cb('Unable to update user: ' + err, false);
     }
 };
 /**
