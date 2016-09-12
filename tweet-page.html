@@ -44,6 +44,116 @@
 
  <script>
 
+    var SECOND = 1000;
+    var MINUTE = SECOND * 60;
+    var HOUR = MINUTE * 60;
+    var DAY = HOUR * 24;
+    var WEEK = DAY * 7;
+    var MONTH = DAY * 30;
+    var YEAR = DAY * 365;
+
+    var _getDateMilliseconds = function(dt) {
+
+        if (dt instanceof Date)
+        {
+            return dt.getTime();
+        }
+        else if (typeof(dt) === 'string')
+        {
+            try
+            {
+                var d = new Date(dt);
+
+                return d.getTime();
+            }
+            catch (e)
+            {
+                console.log('Unable to parse date "' + dt + '": ' + e);
+            }
+        }
+        
+        return dt;
+    };
+
+    /**
+     * This method calculates the time elapsed from the 1st date to the 2nd
+    * date.  The order of the dates isn't important.
+    */
+    var getElapsedTime = function(dt1, dt2) {
+
+        if (dt1 !== undefined && dt1 !== null &&
+            dt2 !== undefined && dt2 !== null)
+    {
+        try
+        {
+            var elapsed = Math.abs(
+                _getDateMilliseconds(dt1) - _getDateMilliseconds(dt2));
+
+            if (elapsed >= YEAR)
+            {
+                return "Over 1 year ago";
+            }
+            else if (elapsed > MONTH)
+            {
+                return "Over 1 month ago";
+            }
+            else if (elapsed > WEEK)
+            {
+                return "Over 1 week ago";
+            }
+            else if (elapsed > DAY)
+            {
+                var days = Math.floor(elapsed / DAY);
+
+                if (days === 1)
+                {
+                    return "Yesterday";
+                }
+                else
+                {
+                    return "Over " + days + " days ago";
+                }
+            }
+            else if (elapsed > HOUR)
+            {
+                var hrs = Math.floor(elapsed / HOUR);
+
+                if (hrs === 1)
+                {
+                    return "Over 1 hour ago";
+                }
+                else
+                {
+                    return "Over " + hrs + " hours ago";
+                }
+            }
+            else if (elapsed > MINUTE)
+            {
+                var mins = Math.floor(elapsed / MINUTE);
+
+                if (mins === 1)
+                {
+                    return "1 minute ago";
+                }
+                else
+                {
+                    return mins + " minutes ago";
+                }
+            }
+            else
+            {
+                return "now";
+            }
+        }
+        catch (e)
+        {
+            console.log("Unable to calculate elapsed time: " + e);
+        }
+    }
+
+    return "";
+    };
+
      var reading = false;
      var lastRead = new Date(1);
      var currentUser = $('#currentUser').val();
@@ -99,6 +209,7 @@
                     for (var i = data.length - 1; i >= 0; i--)
                     {
                         var li;
+                        var now = new Date();
 
                         if (data[i].author.userName !== $('#currentUser').val())
                         {
@@ -110,7 +221,7 @@
                                 '        <div class="header">' +
                                 '            <strong class="primary-font">' + buildUserName(data[i].author) + '</strong>' +
                                 '            <small class="pull-right text-muted">' +
-                                '                <i class="fa fa-clock-o fa-fw"></i> 12 mins ago' +
+                                '                <i class="fa fa-clock-o fa-fw"></i> ' + getElapsedTime(data[i].date, now) +
                                 '            </small>' +
                                 '        </div>' +
                                 '        <p>' +
@@ -128,7 +239,7 @@
                                 '    <div class="chat-body clearfix">' +
                                 '        <div class="header">' +
                                 '            <small class=" text-muted">' +
-                                '                <i class="fa fa-clock-o fa-fw"></i> 13 mins ago' + 
+                                '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) + 
                                 '            </small>' +
                                 '            <strong class="pull-right primary-font">' +  buildUserName(data[i].author) + '</strong>' +
                                 '        </div>' +
