@@ -219,7 +219,11 @@
                                 '    </span>' +
                                 '    <div class="chat-body clearfix">' +
                                 '        <div class="header">' +
-                                '            <strong class="primary-font">' + buildUserName(data[i].author) + '</strong>' +
+                                '            <strong class="primary-font">' +
+                                '               <a href="#" onclick="loadHtml(\'/profile\', function() { loadUserProfile(\'' + data[i].author.userName + '\'); }); return false;">' +
+                                '                   ' + buildUserName(data[i].author) + 
+                                '               </a>' +
+                                '            </strong>' +
                                 '            <small class="pull-right text-muted">' +
                                 '                <i class="fa fa-clock-o fa-fw"></i> ' + getElapsedTime(data[i].date, now) +
                                 '            </small>' +
