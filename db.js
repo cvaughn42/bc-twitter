@@ -95,6 +95,60 @@ DAO.READ_TWEETS_PS = DAO.READ_TWEET_SQL +
                      "ORDER BY tweet_date DESC " +
                      "LIMIT 20";
 
+DAO.SEARCH_USER_PS = "SELECT user_name, first_name, middle_name, last_name " +
+                     "FROM user " +
+                     "WHERE (user_name LIKE $searchText OR " +
+                     "       first_name LIKE $searchText OR " +
+                     "       last_name LIKE $searchText) AND " +
+                     "       user_name != $userName AND " +
+                     "       user_name NOT IN (SELECT user_name " +
+                     "                         FROM user_follow " +
+                     "                         WHERE follower_user_name = $userName)"
+                     "LIMIT 5";
+
+DAO.prototype.searchUsers = function(userName, searchText, cb) {
+
+
+    if (!userName)
+    {
+        cb('Unable to search users: userName is required', null);
+    }
+    if (!searchText || searchText === '')
+    {
+        cb(null, []);
+    }
+    else
+    {
+        var params = {
+            $searchText: '%' + searchText + '%',
+            $userName: userName
+        };
+
+        this.db.all(DAO.SEARCH_USER_PS, params, function(err, rows) {
+          
+            if (err)
+            {
+                cb('Unable to search users: ' + err, null);
+            }
+            else
+            {
+                var users = [];
+
+                for (var row of rows)
+                {
+                    users.push({
+                        userName: row.user_name,
+                        firstName: row.first_name,
+                        middleName: row.middle_name,
+                        lastName: row.last_name
+                    });
+                }
+
+                cb(null, users);
+            }
+        });
+    }
+};
 /**
  * Returns the user for the specified user name
  */

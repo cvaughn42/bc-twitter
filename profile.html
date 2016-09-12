@@ -51,6 +51,10 @@
             Following
         </div>
         <div class="panel-body">
+            <div>
+                Search: <input type="text" id="searchText" /> <button id="search" onclick="searchUsers();">Search</button>
+            </div>
+            
             <div id="following-div"></div>
         </div>
     </div>
@@ -58,6 +62,24 @@
 </div>
 
 <script>
+
+    var searchUsers = function() {
+        
+        $.ajax('/searchUser', {
+            cache: false,
+            data: {
+                searchText: $('#searchText').val()
+            },
+            dataType: 'json',
+            method: 'POST',
+            success: function(data) {
+                alert(JSON.stringify(data));
+            },
+            error: function(jqXhr, status, err) {
+                alert(err);
+            }
+        });
+    };
 
     /**
      * Load the user profile for the specified userName
@@ -129,7 +151,7 @@
         }
         else
         {
-            $('#followers-div').html("<strong>You don't have any followers, but I love you!</strong>");
+            $('#followers-div').html("<strong>You don't have any followers, but <em>I</em> love you!</strong>");
         }
 
         $('#following-div').text('');

@@ -9,6 +9,23 @@ describe('Testing DAO', function() {
         dao.close();
     });
 
+    it('can search users', function(done) {
+
+        dao.searchUsers('cvaughan', 'j', function(err, users) {
+            if (err)
+                done(err);
+            else
+            {
+                for (var user of users)
+                {
+                    console.dir(user);
+                }
+                done();
+            }
+        });
+    });
+
+    /*
     it('Can create follower', function(done) {
 
        dao.createFollower('cvaughan', 'jku', function(err, status) {
@@ -174,4 +191,5 @@ describe('Testing DAO', function() {
             }
         });
     });
+    */
 });

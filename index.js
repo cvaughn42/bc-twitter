@@ -120,6 +120,20 @@ app.get('/', checkAuth, function (req, res) {
     delete req.session.currentUser;
     res.redirect('/'); 
 
+}).post('/searchUser', function(req, res) {
+
+    dao.searchUsers(req.session.currentUser.userName, req.body.searchText, function(err, users) {
+
+        if (err)
+        {
+            res.status(500).send(err);
+        } 
+        else
+        {
+            res.send(users);
+        }
+    });
+
 }).get('/profile', function(req, res) {
 
     readFile('profile.html', 'utf8').then(function(html) {
