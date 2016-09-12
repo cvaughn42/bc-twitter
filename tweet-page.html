@@ -2,56 +2,156 @@
 
     <h1 class="page-header">Tweet</h1>
 
-    <div id="tweetContainer" class="tweet-container">
-
+    <!-- /.panel -->
+    <div class="chat-panel panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-twitter fa-fw"></i> Tweets
+            <div class="btn-group pull-right">
+                <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                    <i class="fa fa-chevron-down"></i>
+                </button>
+                <ul class="dropdown-menu slidedown">
+                    <li>
+                        <a href="#" id="mnuRefresh">
+                            <i class="fa fa-refresh fa-fw"></i> Refresh
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- /.panel-heading -->
+        <div class="panel-body">
+            <ul class="chat">
+                <!-- Tweets will go here -->
+            </ul>
+        </div>
+        <!-- /.panel-body -->
+        <div class="panel-footer">
+            <div class="input-group">
+                <input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here..." maxlength="140" />
+                <span class="input-group-btn">
+                    <button class="btn btn-warning btn-sm" id="btn-chat">
+                        Tweet
+                    </button>
+                </span>
+            </div>
+        </div>
+        <!-- /.panel-footer -->
     </div>
-
-    <div class="tweet-console">
-
-        Tweet:&nbsp;<input type="text" maxlength="140">
-        <button id="tweetButton" name="tweetButton" value="Tweet">Tweet</button>
-
-    </div>
+    <!-- /.panel .chat-panel -->
 
 </div>
 
  <script>
 
+     var reading = false;
      var lastRead = new Date(1);
      var currentUser = $('#currentUser').val();
 
+     var buildUserName = function(user) {
+
+         var nm = '';
+         var sp = '';
+
+         if (user)
+         {
+             if (user.firstName)
+             {
+                nm += sp + user.firstName;
+                sp = ' ';
+             }
+
+             if (user.middleName)
+             {
+                 nm += sp + user.middleName;
+                 sp = " ";
+             }
+
+             if (user.lastName)
+             {
+                 nm += sp + user.lastName;
+                 sp = " ";
+             }
+         }
+
+         return nm;
+     };
+
      var getTweets = function() {
 
-        $.ajax('/getTweets', {
-            dataType: "json",
-            data: {
-                "userName": currentUser,
-                "lastRead": lastRead
-            },
-            type: 'POST',
-            error: function(jqXhr, status, err) {
-                alert("Unable to read tweets: " + err);
-            },
-            success: function(data) {
+         if (!reading)
+         {
+             reading = true;
 
-                for (var i = data.length - 1; i >= 0; i--)
-                {
-                    $('#tweetContainer').prepend(
-                        "<div class='tweet'>" +
-                            "<div class='tweet-date'>" + data[i].date + "</div>" +
-                            "<div class='tweet-author'>" + data[i].author.firstName + " " + data[i].author.lastName + " (" + data[i].author.userName + ")</div>" +
-                            "<div class='tweet-message'>" + data[i].message + "</div>" + 
-                        "</div>");
+            $.ajax('/getTweets', {
+                dataType: "json",
+                data: {
+                    "userName": currentUser,
+                    "lastRead": lastRead
+                },
+                type: 'POST',
+                error: function(jqXhr, status, err) {
+                    alert("Unable to read tweets: " + err);
+                    reading = false;
+                },
+                success: function(data) {
+
+                    for (var i = data.length - 1; i >= 0; i--)
+                    {
+                        var li;
+
+                        if (data[i].author.userName !== $('#currentUser').val())
+                        {
+                            li = $('<li class="left clearfix">' +
+                                '    <span class="chat-img pull-left">' +
+                                '        <img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" />' +
+                                '    </span>' +
+                                '    <div class="chat-body clearfix">' +
+                                '        <div class="header">' +
+                                '            <strong class="primary-font">' + buildUserName(data[i].author) + '</strong>' +
+                                '            <small class="pull-right text-muted">' +
+                                '                <i class="fa fa-clock-o fa-fw"></i> 12 mins ago' +
+                                '            </small>' +
+                                '        </div>' +
+                                '        <p>' +
+                                '            ' + data[i].message + 
+                                '        </p>' +
+                                '    </div>' +
+                                '</li>');
+                        }
+                        else
+                        {
+                            li = $('<li class="right clearfix">' +
+                                '    <span class="chat-img pull-right">' +
+                                '        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" />' +
+                                '    </span>' +
+                                '    <div class="chat-body clearfix">' +
+                                '        <div class="header">' +
+                                '            <small class=" text-muted">' +
+                                '                <i class="fa fa-clock-o fa-fw"></i> 13 mins ago' + 
+                                '            </small>' +
+                                '            <strong class="pull-right primary-font">' +  buildUserName(data[i].author) + '</strong>' +
+                                '        </div>' +
+                                '        <p>' +
+                                '            ' + data[i].message +
+                                '        </p>' +
+                                '    </div>' +
+                                '</li>');
+                        }
+
+                        $('ul.chat').prepend(li);
+                    }
+
+                    lastRead = new Date();
+                    reading = false;
                 }
-
-                lastRead = new Date();
-            }
-        });
-    };
+            });
+         }
+     };
 
     var sendTweet = function() {
 
-        var textBox = $('.tweet-console input[type="text"]');
+        var textBox = $('#btn-input');
 
         if (textBox.val())
         {
@@ -69,6 +169,7 @@
                     if (data === 'ok')
                     {
                         textBox.val('');
+                        getTweets();
                     }
                     else
                     {
@@ -82,7 +183,8 @@
 
     $(document).ready(function() {
 
-        $('#tweetButton').on('click', sendTweet);
+        $('#mnuRefresh').on('click', getTweets);
+        $('#btn-chat').on('click', sendTweet);
 
         getTweets();
 
