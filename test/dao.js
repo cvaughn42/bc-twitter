@@ -11,7 +11,7 @@ describe('Testing DAO', function() {
 
     it('can search users', function(done) {
 
-        dao.searchUsers('cvaughan', 'j', function(err, users) {
+        dao.searchUsers('cvaughan', 's', function(err, users) {
             if (err)
                 done(err);
             else

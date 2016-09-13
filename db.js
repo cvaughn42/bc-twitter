@@ -103,7 +103,7 @@ DAO.SEARCH_USER_PS = "SELECT user_name, first_name, middle_name, last_name " +
                      "       user_name != $userName AND " +
                      "       user_name NOT IN (SELECT user_name " +
                      "                         FROM user_follow " +
-                     "                         WHERE follower_user_name = $userName)"
+                     "                         WHERE follower_user_name = $userName) " +
                      "LIMIT 5";
 
 DAO.prototype.searchUsers = function(userName, searchText, cb) {
