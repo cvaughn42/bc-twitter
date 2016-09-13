@@ -18,11 +18,6 @@ app.use(bodyParser.json());
 
 var session = require('express-session')
 app.use(session({
-    /*
-    genid: function(req) {
-        return genuuid();   // use UUIDs for session IDs
-    },
-    */
     secret: 'currentUser',
     resave: false,
     saveUninitialized: false

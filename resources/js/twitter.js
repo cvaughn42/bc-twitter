@@ -302,6 +302,7 @@ var loadUserProfile = function(userName) {
         method: 'GET',
         success: function(data) {
             loadProfileData(data);
+            loadUserTweets(userName);
         },
         error: function(jqXhr, status, error) {
             alert('Unable to load profile: ' + error);
@@ -427,6 +428,44 @@ var loadHtml = function(url, cb) {
         }
     });                
 };
+
+    var loadUserTweets = function(userName) {
+        $.ajax('/userTweets/' + userName, {
+
+            async: true,
+            method: 'get',
+            dataType: 'json',
+            success: function(data) {
+
+                var now = new Date();
+
+                for (var i = data.length - 1; i >= 0; i--)
+                {
+                    var li = $('<li class="right clearfix">' +
+                            '    <span class="chat-img pull-right">' +
+                            '        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" />' +
+                            '    </span>' +
+                            '    <div class="chat-body clearfix">' +
+                            '        <div class="header">' +
+                            '            <small class=" text-muted">' +
+                            '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) + 
+                            '            </small>' +
+                            '            <strong class="pull-right primary-font">' +  buildUserName(data[i].author) + '</strong>' +
+                            '        </div>' +
+                            '        <p>' +
+                            '            ' + data[i].message +
+                            '        </p>' +
+                            '    </div>' +
+                            '</li>');
+ 
+                    $('ul.chat').prepend(li);
+                }
+            },
+            error: function(jqXhr, status, err) {
+                alert("Unable to load user's tweets: " + err);
+            }
+        });
+    };
 
 $(document).ready(function() {
 
