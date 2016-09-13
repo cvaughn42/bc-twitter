@@ -25,6 +25,14 @@ describe('Testing DAO', function() {
         });
     });
 
+    it('can read user tweets', function(done) {
+
+        dao.getUserTweets('cvaughan', function(err, tweets) {
+            if (err) done(err);
+            else done();
+        });
+    });
+
     /*
     it('Can create follower', function(done) {
 

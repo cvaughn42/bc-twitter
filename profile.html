@@ -87,4 +87,18 @@
         source: substringMatcher() 
     }); 
 
+    $.ajax('/userTweets/' + $('#currentUser').val(), {
+
+        async: true,
+        method: 'get',
+        dataType: 'json',
+        success: function(data) {
+
+            console.dir(data);
+        },
+        error: function(jqXhr, status, err) {
+            alert("Unable to load user's tweets: " + err);
+        }
+    });
+
 </script>

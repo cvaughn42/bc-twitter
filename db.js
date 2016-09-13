@@ -95,6 +95,10 @@ DAO.READ_TWEETS_PS = DAO.READ_TWEET_SQL +
                      "ORDER BY tweet_date DESC " +
                      "LIMIT 20";
 
+DAO.READ_USER_TWEETS_PS = DAO.READ_TWEET_SQL +
+                          "WHERE t.author = ? " +
+                          "ORDER BY tweet_date DESC";
+
 DAO.SEARCH_USER_PS = "SELECT user_name, first_name, middle_name, last_name " +
                      "FROM user " +
                      "WHERE (user_name LIKE $searchText OR " +
@@ -213,6 +217,46 @@ DAO.prototype.updateUser = function(user, cb) {
     catch (err)
     {
         cb('Unable to update user: ' + err, false);
+    }
+};
+DAO.prototype.getUserTweets = function(userName, cb) {
+    if (!userName)
+    {
+        cb("Cannot get tweets: userName is required", null);
+    }
+    else
+    {
+        this.db.all(DAO.READ_USER_TWEETS_PS, userName, function(err, rows) {
+
+            if (err)
+            {
+                cb("Cannot get tweets: " + err, null);
+            }
+            else
+            {
+                var tweets = [];
+
+                for (var row of rows)
+                {
+                    tweets.push({
+                        id: row.tweet_id,
+                        message: row.message,
+                        date: new Date(row.tweet_date),
+                        author: {
+                            userName: row.author_user_name,
+                            firstName: row.author_first_name,
+                            middleName: row.author_middle_name,
+                            lastName: row.author_last_name
+                        },
+                        replyId: row.reply_tweet_id,
+                        retweetId: row.retweet_tweet_id,
+                        directMessageAddress: row.dm_user_name
+                    });
+                }
+
+                cb(null, tweets);
+            }
+        });
     }
 };
 /**

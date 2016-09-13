@@ -304,6 +304,20 @@ app.get('/', checkAuth, function (req, res) {
         });
     }
 
+}).get('/userTweets/:userName', function(req, res) {
+
+    var userName = req.params.userName;
+
+    dao.getUserTweets(userName, function(err, tweets) {
+        if (err)
+        {
+            res.status(500).send(err);
+        }
+        else
+        {
+            res.send(tweets);
+        }
+    });
 }).post('/register', function (req, res) {
 
     var nullIfEmpty = function (val) {
