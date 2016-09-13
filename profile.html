@@ -1,104 +1,82 @@
 <div class="col-lg-12">
-    <h1 class="page-header">Profile</h1>
+    <h1 class="page-header">User Profile</h1>
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            Profile Info
-            <div class="btn-group pull-right">
-                <button type="button" id="updateProfileButton" onclick="updateProfile(); return false;" class="btn btn-primary btn-xs">
-                    <i class="fa fa-check"></i>&nbsp;Save
-                </button>
-            </div>
-        </div>
-        <div class="panel-body">
+    <ul class="nav nav-pills">
+        <li class="active"><a href="#info-pill" data-toggle="tab">Info</a>
+        </li>
+        <li><a href="#tweets-pill" data-toggle="tab">Tweets</a>
+        </li>
+        <li><a href="#following-pill" data-toggle="tab">Following</a>
+        </li>
+        <li><a href="#followers-pill" data-toggle="tab">Followers</a>
+        </li>
+    </ul>
 
-            <form role="form">
-                <div class="form-group">
-                    <label>User Name</label>
-                    <div id="userName" name="userName"></div>
-                </div>
-                <div class="form-group">
-                    <label>First Name</label>
-                    <input class="form-control" id="firstName" name="firstName" maxlength="20" autofocus>
-                    <div id="firstName" name="firstName"></div>
-                </div>
-                <div class="form-group">
-                    <label>Middle Name</label>
-                    <input class="form-control" id="middleName" name="middleName" maxlength="20">
-                    <div id="middleName" name="middleName"></div>
-                </div>
-                <div class="form-group">
-                    <label>Last Name</label>
-                    <input class="form-control" id="lastName" name="lastName" maxlength="20">
-                    <div id="lastName" name="lastName"></div>
-                </div>
-            </form>
-                        
-        </div>
-    </div>
+    <!-- Tab panes -->
+    <div class="tab-content">
+
+        <!-- Info -->
+        <div class="tab-pane fade in active" id="info-pill">
+            <div class="well">
+                <form role="form">
+                    <div class="form-group">
+                        <label>User Name</label>
+                        <div id="userName" name="userName"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input class="form-control" id="firstName" name="firstName" maxlength="20" autofocus>
+                        <div id="firstName" name="firstName"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Middle Name</label>
+                        <input class="form-control" id="middleName" name="middleName" maxlength="20">
+                        <div id="middleName" name="middleName"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input class="form-control" id="lastName" name="lastName" maxlength="20">
+                        <div id="lastName" name="lastName"></div>
+                    </div>
     
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            Followers
-        </div>
-        <div class="panel-body">
-              <div id="followers-div"></div>         
-        </div>
-    </div>
-
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            Following
-        </div>
-        <div class="panel-body">
-            <div>
-                Search: <input type="text" id="searchText" class="typeahead" />
+                    <button type="button" id="updateProfileButton" onclick="updateProfile(); return false;" class="btn btn-primary">
+                        <i class="fa fa-check"></i>&nbsp;Save
+                    </button>
+            </form>
             </div>
-            
-            <div id="following-div"></div>
         </div>
-    </div>
+        <!-- /Info -->
 
-</div>
+        <div class="tab-pane fade" id="tweets-pill">
+            <div class="well">
+                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate 
+                velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            </div>
+        </div>
+
+        <!-- Following -->
+        <div class="tab-pane fade" id="following-pill">
+            <div class="well">
+                <div>
+                    Search: <input type="text" id="searchText" class="typeahead" />
+                </div>
+                
+                <div id="following-div"></div>
+            </div>
+        </div>
+        <!-- /Following -->
+
+        <!-- Followers -->
+        <div class="tab-pane fade" id="followers-pill">
+            <div class="well">
+                <div id="followers-div"></div>
+            </div>
+        </div>
+        <!-- /Followers -->
+
+    </div>
 
 <script>
-
-
-    var candidates = [];
- 
-    var substringMatcher = function() { 
-        
-        return function findMatches(q, cb) { 
-            
-            var matches = []; 
-
-            $.ajax('/searchUser', {
-                cache: false,
-                async: false,
-                data: {
-                    searchText: q
-                },
-                dataType: 'json',
-                method: 'POST',
-                success: function(data) {
-                    
-                    candidates = data;
-                    var usr = null;
-                    
-                    for (var i in candidates)
-                    {
-                        usr = candidates[i];
-                        matches.push(usr.firstName + ' ' + usr.lastName + ' (' + usr.userName + ')');
-                    }
-
-                    cb(matches);
-                },
-                error: function(jqXhr, status, err) {
-                    alert(err);
-                }
-            });
-        }; 
-    }; 
  
     $('.typeahead').typeahead({ 
         hint: true, 
@@ -108,126 +86,5 @@
         name: 'users', 
         source: substringMatcher() 
     }); 
-
-    /**
-     * Load the user profile for the specified userName
-     */
-    var loadUserProfile = function(userName) {
-
-        $('div#userName').text(userName);
-        
-        var profile;
-
-        $.ajax('/profile/' + userName, {
-            async: true,
-            cache: false,
-            dataType: 'json',
-            method: 'GET',
-            success: function(data) {
-                loadProfileData(data);
-            },
-            error: function(jqXhr, status, error) {
-                alert('Unable to load profile: ' + error);
-            }
-        });
-    };
-
-    var loadProfileData = function(profile) {
-
-        if (profile)
-        {
-            var user = profile.user;
-
-            if (user.userName === $('#currentUser').val())
-            {
-                // load for update
-                $('input#firstName').val(user.firstName);
-                $('input#middleName').val(user.middleName);
-                $('input#lastName').val(user.lastName);
-                $('input#firstName').show();
-                $('input#middleName').show();
-                $('input#lastName').show();
-                $('div#firstName').hide();
-                $('div#middleName').hide();
-                $('div#lastName').hide();
-                $('#updateProfileButton').show();
-            }
-            else
-            {
-                // load for display
-                $('div#firstName').text(user.firstName);
-                $('div#middleName').text(user.middleName);
-                $('div#lastName').text(user.lastName);
-                $('input#firstName').hide();
-                $('input#middleName').hide();
-                $('input#lastName').hide();
-                $('div#firstName').show();
-                $('div#middleName').show();
-                $('div#lastName').show();
-                $('#updateProfileButton').hide();
-            }
-        } 
-
-        $('#followers-div').text('');
-
-        if (profile.followers && profile.followers.length)
-        {
-            for (var i = 0; i < profile.followers.length; i++)
-            {
-                $('#followers-div').append("<div>" + profile.followers[i].userName + "</div>");
-            }
-        }
-        else
-        {
-            $('#followers-div').html("<strong>You don't have any followers, but <em>I</em> love you!</strong>");
-        }
-
-        $('#following-div').text('');
-
-        if (profile.following)
-        {
-            for (var i = 0; i < profile.following.length; i++)
-            {
-                $('#following-div').append("<div>" + profile.following[i].userName + "</div>");
-            }
-        }
-  };
-
-  function updateProfile() {
-      
-      var firstName = $('input#firstName').val();
-      var middleName = $('input#middleName').val();
-      var lastName = $('input#lastName').val();
-      var userName = $('#currentUser').val();
-
-      if (firstName && lastName && userName)
-      {
-          $.ajax('/updateUser', {
-              'async': true,
-              'method': 'POST', 
-              'data': {
-                  "user": {
-                      "userName": userName,
-                      "firstName": firstName,
-                      "middleName": middleName,
-                      "lastName": lastName
-                  }
-              },
-              'success': function(data) {
-                  if (data !== 'ok')
-                  {
-                      alert(data);
-                  }
-              },
-              'error': function(jqXhr, status, err) {
-                  alert(err);
-              }
-          });
-      }
-      else
-      {
-          alert("First name, last name and user name are required");
-      }
-  };
 
 </script>
