@@ -115,6 +115,15 @@ app.get('/', checkAuth, function (req, res) {
     delete req.session.currentUser;
     res.redirect('/'); 
 
+}).post('/addFollowing', function(req, res) {
+    dao.createFollower(req.body.followerUserName, req.body.followingUserName, function(err, status) {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            res.send("ok");
+        }
+    });
+
 }).post('/searchUser', function(req, res) {
 
     dao.searchUsers(req.session.currentUser.userName, req.body.searchText, function(err, users) {

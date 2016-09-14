@@ -6,26 +6,22 @@ var WEEK = DAY * 7;
 var MONTH = DAY * 30;
 var YEAR = DAY * 365;
 
-var _getDateMilliseconds = function(dt) {
+var _getDateMilliseconds = function (dt) {
 
-    if (dt instanceof Date)
-    {
+    if (dt instanceof Date) {
         return dt.getTime();
     }
-    else if (typeof(dt) === 'string')
-    {
-        try
-        {
+    else if (typeof (dt) === 'string') {
+        try {
             var d = new Date(dt);
 
             return d.getTime();
         }
-        catch (e)
-        {
+        catch (e) {
             console.log('Unable to parse date "' + dt + '": ' + e);
         }
     }
-    
+
     return dt;
 };
 
@@ -33,119 +29,98 @@ var _getDateMilliseconds = function(dt) {
  * This method calculates the time elapsed from the 1st date to the 2nd
 * date.  The order of the dates isn't important.
 */
-var getElapsedTime = function(dt1, dt2) {
+var getElapsedTime = function (dt1, dt2) {
 
     if (dt1 !== undefined && dt1 !== null &&
-        dt2 !== undefined && dt2 !== null)
-{
-    try
-    {
-        var elapsed = Math.abs(
-            _getDateMilliseconds(dt1) - _getDateMilliseconds(dt2));
+        dt2 !== undefined && dt2 !== null) {
+        try {
+            var elapsed = Math.abs(
+                _getDateMilliseconds(dt1) - _getDateMilliseconds(dt2));
 
-        if (elapsed >= YEAR)
-        {
-            return "Over 1 year ago";
-        }
-        else if (elapsed > MONTH)
-        {
-            return "Over 1 month ago";
-        }
-        else if (elapsed > WEEK)
-        {
-            return "Over 1 week ago";
-        }
-        else if (elapsed > DAY)
-        {
-            var days = Math.floor(elapsed / DAY);
+            if (elapsed >= YEAR) {
+                return "Over 1 year ago";
+            }
+            else if (elapsed > MONTH) {
+                return "Over 1 month ago";
+            }
+            else if (elapsed > WEEK) {
+                return "Over 1 week ago";
+            }
+            else if (elapsed > DAY) {
+                var days = Math.floor(elapsed / DAY);
 
-            if (days === 1)
-            {
-                return "Yesterday";
+                if (days === 1) {
+                    return "Yesterday";
+                }
+                else {
+                    return "Over " + days + " days ago";
+                }
             }
-            else
-            {
-                return "Over " + days + " days ago";
-            }
-        }
-        else if (elapsed > HOUR)
-        {
-            var hrs = Math.floor(elapsed / HOUR);
+            else if (elapsed > HOUR) {
+                var hrs = Math.floor(elapsed / HOUR);
 
-            if (hrs === 1)
-            {
-                return "Over 1 hour ago";
+                if (hrs === 1) {
+                    return "Over 1 hour ago";
+                }
+                else {
+                    return "Over " + hrs + " hours ago";
+                }
             }
-            else
-            {
-                return "Over " + hrs + " hours ago";
-            }
-        }
-        else if (elapsed > MINUTE)
-        {
-            var mins = Math.floor(elapsed / MINUTE);
+            else if (elapsed > MINUTE) {
+                var mins = Math.floor(elapsed / MINUTE);
 
-            if (mins === 1)
-            {
-                return "1 minute ago";
+                if (mins === 1) {
+                    return "1 minute ago";
+                }
+                else {
+                    return mins + " minutes ago";
+                }
             }
-            else
-            {
-                return mins + " minutes ago";
+            else {
+                return "now";
             }
         }
-        else
-        {
-            return "now";
+        catch (e) {
+            console.log("Unable to calculate elapsed time: " + e);
         }
     }
-    catch (e)
-    {
-        console.log("Unable to calculate elapsed time: " + e);
-    }
-}
 
-return "";
+    return "";
 };
 
-    var reading = false;
-    var lastRead = new Date(1);
-    var currentUser = $('#currentUser').val();
+var reading = false;
+var lastRead = new Date(1);
+var currentUser = $('#currentUser').val();
 
-    var buildUserName = function(user) {
+var buildUserName = function (user) {
 
-        var nm = '';
-        var sp = '';
+    var nm = '';
+    var sp = '';
 
-        if (user)
-        {
-            if (user.firstName)
-            {
+    if (user) {
+        if (user.firstName) {
             nm += sp + user.firstName;
             sp = ' ';
-            }
-
-            if (user.middleName)
-            {
-                nm += sp + user.middleName;
-                sp = " ";
-            }
-
-            if (user.lastName)
-            {
-                nm += sp + user.lastName;
-                sp = " ";
-            }
         }
 
-        return nm;
-    };
+        if (user.middleName) {
+            nm += sp + user.middleName;
+            sp = " ";
+        }
 
-    var getTweets = function() {
+        if (user.lastName) {
+            nm += sp + user.lastName;
+            sp = " ";
+        }
+    }
 
-        if (!reading)
-        {
-            reading = true;
+    return nm;
+};
+
+var getTweets = function () {
+
+    if (!reading) {
+        reading = true;
 
         $.ajax('/getTweets', {
             dataType: "json",
@@ -154,19 +129,17 @@ return "";
                 "lastRead": lastRead
             },
             type: 'POST',
-            error: function(jqXhr, status, err) {
+            error: function (jqXhr, status, err) {
                 alert("Unable to read tweets: " + err);
                 reading = false;
             },
-            success: function(data) {
+            success: function (data) {
 
-                for (var i = data.length - 1; i >= 0; i--)
-                {
+                for (var i = data.length - 1; i >= 0; i--) {
                     var li;
                     var now = new Date();
 
-                    if (data[i].author.userName !== $('#currentUser').val())
-                    {
+                    if (data[i].author.userName !== $('#currentUser').val()) {
                         li = $('<li class="left clearfix">' +
                             '    <span class="chat-img pull-left">' +
                             '        <img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle" />' +
@@ -175,7 +148,7 @@ return "";
                             '        <div class="header">' +
                             '            <strong class="primary-font">' +
                             '               <a href="#" onclick="loadHtml(\'/profile\', function() { loadUserProfile(\'' + data[i].author.userName + '\'); }); return false;">' +
-                            '                   ' + buildUserName(data[i].author) + 
+                            '                   ' + buildUserName(data[i].author) +
                             '               </a>' +
                             '            </strong>' +
                             '            <small class="pull-right text-muted">' +
@@ -183,13 +156,12 @@ return "";
                             '            </small>' +
                             '        </div>' +
                             '        <p>' +
-                            '            ' + data[i].message + 
+                            '            ' + data[i].message +
                             '        </p>' +
                             '    </div>' +
                             '</li>');
                     }
-                    else
-                    {
+                    else {
                         li = $('<li class="right clearfix">' +
                             '    <span class="chat-img pull-right">' +
                             '        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" />' +
@@ -197,9 +169,9 @@ return "";
                             '    <div class="chat-body clearfix">' +
                             '        <div class="header">' +
                             '            <small class=" text-muted">' +
-                            '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) + 
+                            '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) +
                             '            </small>' +
-                            '            <strong class="pull-right primary-font">' +  buildUserName(data[i].author) + '</strong>' +
+                            '            <strong class="pull-right primary-font">' + buildUserName(data[i].author) + '</strong>' +
                             '        </div>' +
                             '        <p>' +
                             '            ' + data[i].message +
@@ -215,15 +187,14 @@ return "";
                 reading = false;
             }
         });
-        }
-    };
+    }
+};
 
-var sendTweet = function() {
+var sendTweet = function () {
 
     var textBox = $('#btn-input');
 
-    if (textBox.val())
-    {
+    if (textBox.val()) {
         $.ajax('/tweet', {
             data: {
                 "userName": currentUser,
@@ -231,17 +202,15 @@ var sendTweet = function() {
             },
             type: "POST",
             dataType: "text",
-            error: function(jqXhr, status, error) {
+            error: function (jqXhr, status, error) {
                 alert("Unable to send tweet: " + error);
             },
-            success: function(data) {
-                if (data === 'ok')
-                {
+            success: function (data) {
+                if (data === 'ok') {
                     textBox.val('');
                     getTweets();
                 }
-                else
-                {
+                else {
                     alert("Unable to send tweet: " + data);
                 }
             }
@@ -250,46 +219,10 @@ var sendTweet = function() {
 
 };
 
-var candidates = [];
-
-var substringMatcher = function() { 
-    
-    return function findMatches(q, cb) { 
-        
-        var matches = []; 
-
-        $.ajax('/searchUser', {
-            cache: false,
-            async: false,
-            data: {
-                searchText: q
-            },
-            dataType: 'json',
-            method: 'POST',
-            success: function(data) {
-                
-                candidates = data;
-                var usr = null;
-                
-                for (var i in candidates)
-                {
-                    usr = candidates[i];
-                    matches.push(usr.firstName + ' ' + usr.lastName + ' (' + usr.userName + ')');
-                }
-
-                cb(matches);
-            },
-            error: function(jqXhr, status, err) {
-                alert(err);
-            }
-        });
-    }; 
-};
-
 /**
  * Load the user profile for the specified userName
  */
-var loadUserProfile = function(userName) {
+var loadUserProfile = function (userName) {
 
     $('div#userName').text(userName);
 
@@ -300,180 +233,167 @@ var loadUserProfile = function(userName) {
         cache: false,
         dataType: 'json',
         method: 'GET',
-        success: function(data) {
+        success: function (data) {
             loadProfileData(data);
             loadUserTweets(userName);
         },
-        error: function(jqXhr, status, error) {
+        error: function (jqXhr, status, error) {
             alert('Unable to load profile: ' + error);
         }
     });
 };
 
-var loadProfileData = function(profile) {
+var loadProfileData = function (profile) {
 
-if (profile)
-{
-    var user = profile.user;
+    if (profile) {
+        var user = profile.user;
 
-    if (user.userName === $('#currentUser').val())
-    {
-        // load for update
-        $('input#firstName').val(user.firstName);
-        $('input#middleName').val(user.middleName);
-        $('input#lastName').val(user.lastName);
-        $('input#firstName').show();
-        $('input#middleName').show();
-        $('input#lastName').show();
-        $('div#firstName').hide();
-        $('div#middleName').hide();
-        $('div#lastName').hide();
-        $('#updateProfileButton').show();
+        if (user.userName === $('#currentUser').val()) {
+            // load for update
+            $('input#firstName').val(user.firstName);
+            $('input#middleName').val(user.middleName);
+            $('input#lastName').val(user.lastName);
+            $('input#firstName').show();
+            $('input#middleName').show();
+            $('input#lastName').show();
+            $('div#firstName').hide();
+            $('div#middleName').hide();
+            $('div#lastName').hide();
+            $('#updateProfileButton').show();
+        }
+        else {
+            // load for display
+            $('div#firstName').text(user.firstName);
+            $('div#middleName').text(user.middleName);
+            $('div#lastName').text(user.lastName);
+            $('input#firstName').hide();
+            $('input#middleName').hide();
+            $('input#lastName').hide();
+            $('div#firstName').show();
+            $('div#middleName').show();
+            $('div#lastName').show();
+            $('#updateProfileButton').hide();
+        }
     }
-    else
-    {
-        // load for display
-        $('div#firstName').text(user.firstName);
-        $('div#middleName').text(user.middleName);
-        $('div#lastName').text(user.lastName);
-        $('input#firstName').hide();
-        $('input#middleName').hide();
-        $('input#lastName').hide();
-        $('div#firstName').show();
-        $('div#middleName').show();
-        $('div#lastName').show();
-        $('#updateProfileButton').hide();
+
+    $('#followers-div').text('');
+
+    if (profile.followers && profile.followers.length) {
+        for (var i = 0; i < profile.followers.length; i++) {
+            $('#followers-div').append("<div>" + profile.followers[i].userName + "</div>");
+        }
     }
-} 
-
-$('#followers-div').text('');
-
-if (profile.followers && profile.followers.length)
-{
-    for (var i = 0; i < profile.followers.length; i++)
-    {
-        $('#followers-div').append("<div>" + profile.followers[i].userName + "</div>");
+    else {
+        $('#followers-div').html("<strong>You don't have any followers, but <em>I</em> love you!</strong>");
     }
-}
-else
-{
-    $('#followers-div').html("<strong>You don't have any followers, but <em>I</em> love you!</strong>");
-}
 
-$('#following-div').text('');
-
-if (profile.following)
-{
-    for (var i = 0; i < profile.following.length; i++)
-    {
-        $('#following-div').append("<div>" + profile.following[i].userName + "</div>");
-    }
-}
+    $('#following-div').follower({
+        following: profile.following,
+        userName: profile.user.userName
+    });
 };
 
 function updateProfile() {
 
-var firstName = $('input#firstName').val();
-var middleName = $('input#middleName').val();
-var lastName = $('input#lastName').val();
-var userName = $('#currentUser').val();
+    var firstName = $('input#firstName').val();
+    var middleName = $('input#middleName').val();
+    var lastName = $('input#lastName').val();
+    var userName = $('#currentUser').val();
 
-if (firstName && lastName && userName)
-{
-    $.ajax('/updateUser', {
-        'async': true,
-        'method': 'POST', 
-        'data': {
-            "user": {
-                "userName": userName,
-                "firstName": firstName,
-                "middleName": middleName,
-                "lastName": lastName
+    if (firstName && lastName && userName) {
+        $.ajax('/updateUser', {
+            'async': true,
+            'method': 'POST',
+            'data': {
+                "user": {
+                    "userName": userName,
+                    "firstName": firstName,
+                    "middleName": middleName,
+                    "lastName": lastName
+                }
+            },
+            'success': function (data) {
+                if (data !== 'ok') {
+                    alert(data);
+                }
+                else {
+                    alert('Update successful!');
+                }
+            },
+            'error': function (jqXhr, status, err) {
+                alert(err);
             }
-        },
-        'success': function(data) {
-            if (data !== 'ok')
-            {
-                alert(data);
-            }
-        },
-        'error': function(jqXhr, status, err) {
-            alert(err);
-        }
-    });
-}
-else
-{
-    alert("First name, last name and user name are required");
-}
+        });
+    }
+    else {
+        alert("First name, last name and user name are required");
+    }
 };
 
 
-var loadHtml = function(url, cb) {
+var loadHtml = function (url, cb) {
 
     $.ajax(url, {
         cache: false,
         method: 'GET',
         dataType: 'html',
-        error: function(jqXhr, status, err) {
+        error: function (jqXhr, status, err) {
             alert('Unable to load url ' + url + ': ' + err);
         },
-        success: function(html) {
+        success: function (html) {
             $('#appContent').html(html);
 
-            if (cb)
-            {
+            if (cb) {
                 cb();
             }
         }
-    });                
+    });
 };
 
-    var loadUserTweets = function(userName) {
-        $.ajax('/userTweets/' + userName, {
+var loadUserTweets = function (userName) {
+    $.ajax('/userTweets/' + userName, {
 
-            async: true,
-            method: 'get',
-            dataType: 'json',
-            success: function(data) {
+        async: true,
+        method: 'get',
+        dataType: 'json',
+        success: function (data) {
 
-                var now = new Date();
+            var now = new Date();
 
-                for (var i = data.length - 1; i >= 0; i--)
-                {
-                    var li = $('<li class="right clearfix">' +
-                            '    <span class="chat-img pull-right">' +
-                            '        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" />' +
-                            '    </span>' +
-                            '    <div class="chat-body clearfix">' +
-                            '        <div class="header">' +
-                            '            <small class=" text-muted">' +
-                            '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) + 
-                            '            </small>' +
-                            '            <strong class="pull-right primary-font">' +  buildUserName(data[i].author) + '</strong>' +
-                            '        </div>' +
-                            '        <p>' +
-                            '            ' + data[i].message +
-                            '        </p>' +
-                            '    </div>' +
-                            '</li>');
- 
-                    $('ul.chat').prepend(li);
-                }
-            },
-            error: function(jqXhr, status, err) {
-                alert("Unable to load user's tweets: " + err);
+            for (var i = data.length - 1; i >= 0; i--) {
+                var li = $('<li class="right clearfix">' +
+                    '    <span class="chat-img pull-right">' +
+                    '        <img src="http://placehold.it/50/FA6F57/fff" alt="User Avatar" class="img-circle" />' +
+                    '    </span>' +
+                    '    <div class="chat-body clearfix">' +
+                    '        <div class="header">' +
+                    '            <small class=" text-muted">' +
+                    '                <i class="fa fa-clock-o fa-fw"></i>' + getElapsedTime(data[i].date, now) +
+                    '            </small>' +
+                    '            <strong class="pull-right primary-font">' + buildUserName(data[i].author) + '</strong>' +
+                    '        </div>' +
+                    '        <p>' +
+                    '            ' + data[i].message +
+                    '        </p>' +
+                    '    </div>' +
+                    '</li>');
+
+                $('ul.chat').prepend(li);
             }
-        });
-    };
+        },
+        error: function (jqXhr, status, err) {
+            alert("Unable to load user's tweets: " + err);
+        }
+    });
+};
 
-$(document).ready(function() {
+$(document).ready(function () {
 
     /**
      * Profile menu item click handler
      */
-    $('#mnuProfile').on('click', function() {
-        loadHtml('/profile', function() {
+    $('#mnuProfile').on('click', function () {
+        loadHtml('/profile', function () {
             loadUserProfile($('#currentUser').val());
         });
         return false;
@@ -482,7 +402,7 @@ $(document).ready(function() {
     /**
      * Settings menu item click handler
      */
-    $('#mnuSettings').on('click', function() {
+    $('#mnuSettings').on('click', function () {
         loadHtml('/settings');
         return false;
     });
@@ -492,7 +412,7 @@ $(document).ready(function() {
 
     getTweets();
 
-    setInterval(function() {
+    setInterval(function () {
         getTweets();
     }, 10000);
 });

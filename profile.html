@@ -66,10 +66,6 @@
         <!-- Following -->
         <div class="tab-pane fade" id="following-pill">
             <div class="well">
-                <div>
-                    Search: <input type="text" id="searchText" class="typeahead" />
-                </div>
-                
                 <div id="following-div"></div>
             </div>
         </div>
@@ -84,16 +80,3 @@
         <!-- /Followers -->
 
     </div>
-
-<script>
- 
-    $('.typeahead').typeahead({ 
-        hint: true, 
-        highlight: true, 
-        minLength: 1 
-    }, { 
-        name: 'users', 
-        source: substringMatcher() 
-    }); 
-
-</script>
