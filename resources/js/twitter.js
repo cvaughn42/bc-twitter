@@ -1,3 +1,22 @@
+if (!Array.prototype.find)
+{
+    Array.prototype.find = function(cb) {
+
+        if (cb)
+        {
+            for (var i in this)
+            {
+                if (cb(this[i]))
+                {
+                    return this[i];
+                }
+            }
+        }
+
+        return null;
+    };
+}
+
 var SECOND = 1000;
 var MINUTE = SECOND * 60;
 var HOUR = MINUTE * 60;
