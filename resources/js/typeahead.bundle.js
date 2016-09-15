@@ -1101,7 +1101,7 @@
         }
         function buildHtml(c) {
             return {
-                wrapper: '<span class="' + c.wrapper + '"></span>',
+                wrapper: '<div class="' + c.wrapper + '"></div>',
                 menu: '<div class="' + c.menu + '"></div>'
             };
         }
